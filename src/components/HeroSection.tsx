@@ -18,8 +18,8 @@ const HeroSection = () => {
         <p className="font-body text-xs letter-wider uppercase text-muted-foreground mb-6 animate-fade-in" style={{ animationDelay: "0.2s" }}>
           Nova Coleção 2026
         </p>
-        <h1 className="font-display text-6xl md:text-8xl lg:text-9xl font-normal text-foreground mb-8 animate-fade-in-up" style={{ animationDelay: "0.4s", opacity: 0 }}>
-          Maison
+        <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-normal text-foreground mb-8 animate-fade-in-up" style={{ animationDelay: "0.4s", opacity: 0 }}>
+          Martins Class
         </h1>
         <p className="font-body text-base md:text-lg text-muted-foreground max-w-xl mx-auto mb-12 animate-fade-in-up leading-relaxed" style={{ animationDelay: "0.6s", opacity: 0 }}>
           Elegância atemporal para quem busca peças únicas. Roupas que contam histórias e definem estilos.
