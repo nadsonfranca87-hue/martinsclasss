@@ -1,14 +1,22 @@
 import { useState } from "react";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { getSiteData } from "@/lib/siteData";
 
 const ContactSection = () => {
   const [formData, setFormData] = useState({ name: "", email: "", message: "" });
-  const data = getSiteData();
+  const { data: settings } = useSiteSettings();
+  const fallback = getSiteData();
+
+  const whatsappLink = settings?.whatsapp_link || fallback.whatsappLink;
+  const instagramLink = settings?.instagram_link || fallback.instagramLink;
+  const contactEmail = settings?.contact_email || fallback.contactEmail;
+  const contactPhone = settings?.contact_phone || fallback.contactPhone;
+  const contactAddress = settings?.contact_address || fallback.contactAddress;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const whatsappMsg = encodeURIComponent(`Olá! Meu nome é ${formData.name}. ${formData.message}`);
-    window.open(`${data.whatsappLink}?text=${whatsappMsg}`, "_blank");
+    window.open(`${whatsappLink}?text=${whatsappMsg}`, "_blank");
   };
 
   return (
@@ -27,9 +35,9 @@ const ContactSection = () => {
             <h3 className="font-display text-2xl text-foreground">Informações</h3>
             <div className="space-y-6">
               {[
-                { label: "Email", value: data.contactEmail, href: `mailto:${data.contactEmail}` },
-                { label: "Telefone", value: data.contactPhone, href: `tel:${data.contactPhone.replace(/\s/g, "")}` },
-                { label: "Endereço", value: data.contactAddress, href: "#" },
+                { label: "Email", value: contactEmail, href: `mailto:${contactEmail}` },
+                { label: "Telefone", value: contactPhone, href: `tel:${contactPhone.replace(/\s/g, "")}` },
+                { label: "Endereço", value: contactAddress, href: "#" },
               ].map((item) => (
                 <a key={item.label} href={item.href} className="block border-b border-border pb-4 hover:border-primary transition-colors group">
                   <p className="font-body text-[10px] letter-wide uppercase text-muted-foreground mb-1">{item.label}</p>
@@ -37,16 +45,11 @@ const ContactSection = () => {
                 </a>
               ))}
             </div>
-
             <div>
               <p className="font-body text-[10px] letter-wide uppercase text-muted-foreground mb-3">Redes Sociais</p>
               <div className="flex gap-6">
-                <a href={data.whatsappLink} target="_blank" rel="noopener noreferrer" className="font-body text-sm text-muted-foreground hover:text-primary transition-colors duration-300">
-                  WhatsApp
-                </a>
-                <a href={data.instagramLink} target="_blank" rel="noopener noreferrer" className="font-body text-sm text-muted-foreground hover:text-primary transition-colors duration-300">
-                  Instagram
-                </a>
+                <a href={whatsappLink} target="_blank" rel="noopener noreferrer" className="font-body text-sm text-muted-foreground hover:text-primary transition-colors duration-300">WhatsApp</a>
+                <a href={instagramLink} target="_blank" rel="noopener noreferrer" className="font-body text-sm text-muted-foreground hover:text-primary transition-colors duration-300">Instagram</a>
               </div>
             </div>
           </div>

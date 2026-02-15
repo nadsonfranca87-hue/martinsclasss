@@ -1,15 +1,48 @@
 import { useState } from "react";
+import { useProducts, useCategories } from "@/hooks/useProducts";
+import { useCart } from "@/hooks/useCart";
+import { ShoppingBag } from "lucide-react";
 import { getSiteData } from "@/lib/siteData";
-
-const categories = ["Todos", "Roupas", "Acessórios", "Novidades"];
 
 const CollectionSection = () => {
   const [activeCategory, setActiveCategory] = useState("Todos");
-  const data = getSiteData();
+  const { data: products, isLoading } = useProducts();
+  const { data: categories } = useCategories();
+  const { addItem } = useCart();
+  const fallbackData = getSiteData();
 
-  const filtered = activeCategory === "Todos"
-    ? data.products
-    : data.products.filter((p) => p.category === activeCategory);
+  const categoryNames = ["Todos", ...(categories?.map((c) => c.name) || [])];
+
+  // Use DB products if available, otherwise fallback to local data
+  const hasDbProducts = products && products.length > 0;
+
+  const filtered = hasDbProducts
+    ? activeCategory === "Todos"
+      ? products
+      : products.filter((p) => p.category?.name === activeCategory)
+    : activeCategory === "Todos"
+      ? fallbackData.products
+      : fallbackData.products.filter((p) => p.category === activeCategory);
+
+  const handleAddToCart = (product: any) => {
+    if (hasDbProducts) {
+      addItem({
+        id: product.id,
+        productKey: product.key,
+        title: product.title,
+        price: product.price,
+        image: product.images?.[0]?.image_url || "",
+      });
+    } else {
+      addItem({
+        id: product.id,
+        productKey: `PROD-${product.id.toString().padStart(3, "0")}`,
+        title: product.title,
+        price: parseFloat(product.price.replace(/[^\d,]/g, "").replace(",", ".")),
+        image: product.image,
+      });
+    }
+  };
 
   return (
     <section id="colecao" className="py-32 px-6">
@@ -23,7 +56,7 @@ const CollectionSection = () => {
         </div>
 
         <div className="flex flex-wrap items-center justify-center gap-6 md:gap-8 mb-16">
-          {categories.map((cat) => (
+          {categoryNames.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
@@ -38,27 +71,66 @@ const CollectionSection = () => {
           ))}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filtered.map((product) => (
-            <div key={product.id} className="group cursor-pointer">
-              <div className="relative overflow-hidden mb-4 bg-secondary aspect-[3/4]">
-                {product.image && (
-                  <img
-                    src={product.image}
-                    alt={product.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                  />
-                )}
-                <div className="absolute inset-0 bg-background/0 group-hover:bg-background/20 transition-colors duration-500" />
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="animate-pulse">
+                <div className="bg-secondary aspect-[3/4] mb-4" />
+                <div className="h-3 bg-secondary w-1/3 mb-2" />
+                <div className="h-4 bg-secondary w-2/3 mb-2" />
+                <div className="h-3 bg-secondary w-1/4" />
               </div>
-              <div className="space-y-1">
-                <p className="font-body text-[10px] letter-wide uppercase text-muted-foreground">{product.category}</p>
-                <h3 className="font-display text-lg text-foreground group-hover:text-primary transition-colors duration-300">{product.title}</h3>
-                <p className="font-body text-sm text-primary">{product.price}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {filtered.map((product: any) => {
+              const image = hasDbProducts
+                ? product.images?.[0]?.image_url
+                : product.image;
+              const categoryName = hasDbProducts ? product.category?.name : product.category;
+              const priceDisplay = hasDbProducts ? `R$ ${Number(product.price).toFixed(2)}` : product.price;
+
+              return (
+                <div key={product.id} className="group cursor-pointer">
+                  <div className="relative overflow-hidden mb-4 bg-secondary aspect-[3/4]">
+                    {image && (
+                      <img
+                        src={image}
+                        alt={product.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
+                    )}
+                    <div className="absolute inset-0 bg-background/0 group-hover:bg-background/20 transition-colors duration-500" />
+                    <button
+                      onClick={() => handleAddToCart(product)}
+                      className="absolute bottom-4 right-4 bg-primary text-primary-foreground p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hover:bg-primary/90"
+                    >
+                      <ShoppingBag className="h-4 w-4" />
+                    </button>
+                    {hasDbProducts && product.is_new && (
+                      <span className="absolute top-4 left-4 bg-primary text-primary-foreground font-body text-[10px] letter-wide uppercase px-3 py-1">
+                        Novidade
+                      </span>
+                    )}
+                    {hasDbProducts && product.is_promo && (
+                      <span className="absolute top-4 left-4 bg-destructive text-destructive-foreground font-body text-[10px] letter-wide uppercase px-3 py-1">
+                        Promoção
+                      </span>
+                    )}
+                  </div>
+                  <div className="space-y-1">
+                    <p className="font-body text-[10px] letter-wide uppercase text-muted-foreground">{categoryName}</p>
+                    <h3 className="font-display text-lg text-foreground group-hover:text-primary transition-colors duration-300">
+                      {product.title}
+                    </h3>
+                    <p className="font-body text-sm text-primary">{priceDisplay}</p>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </section>
   );

@@ -4,6 +4,7 @@ import CollectionSection from "@/components/CollectionSection";
 import AboutSection from "@/components/AboutSection";
 import ContactSection from "@/components/ContactSection";
 import Footer from "@/components/Footer";
+import CartDrawer from "@/components/CartDrawer";
 
 const Index = () => {
   return (
@@ -16,6 +17,7 @@ const Index = () => {
         <ContactSection />
       </main>
       <Footer />
+      <CartDrawer />
     </div>
   );
 };
