@@ -23,7 +23,7 @@ const Navbar = () => {
     >
       <nav className="container mx-auto flex items-center justify-between px-6 py-5">
         <a href="#" className="font-display text-xl tracking-[0.3em] text-foreground">
-          MAISON
+          MARTINS CLASS
         </a>
         <ul className="hidden md:flex items-center gap-10">
           {navItems.map((item) => (

@@ -4,10 +4,10 @@ const Footer = () => {
       <div className="container mx-auto">
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
           <a href="#" className="font-display text-xl tracking-[0.3em] text-foreground">
-            MAISON
+            MARTINS CLASS
           </a>
           <p className="font-body text-xs text-muted-foreground">
-            © 2026 Maison. Todos os direitos reservados.
+            © 2026 Martins Class. Todos os direitos reservados.
           </p>
           <div className="flex gap-6">
             {["Instagram", "Pinterest", "WhatsApp"].map((social) => (
