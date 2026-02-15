@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { ShoppingBag, Menu, X } from "lucide-react";
+import { useCart } from "@/hooks/useCart";
 import logo from "@/assets/logo.jpeg";
 
 const navItems = [
@@ -9,6 +11,8 @@ const navItems = [
 
 const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const { itemCount, setIsOpen } = useCart();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 50);
@@ -27,19 +31,51 @@ const Navbar = () => {
           <img src={logo} alt="Martins Class" className="h-12 w-12 object-contain rounded-full" />
           <span className="font-display text-lg tracking-[0.2em] text-foreground hidden sm:inline">MARTINS CLASS</span>
         </a>
+
         <ul className="hidden md:flex items-center gap-10">
           {navItems.map((item) => (
             <li key={item.label}>
-              <a
-                href={item.href}
-                className="font-body text-xs letter-wide uppercase text-muted-foreground hover:text-foreground transition-colors duration-300"
-              >
+              <a href={item.href} className="font-body text-xs letter-wide uppercase text-muted-foreground hover:text-foreground transition-colors duration-300">
                 {item.label}
               </a>
             </li>
           ))}
         </ul>
+
+        <div className="flex items-center gap-4">
+          <button onClick={() => setIsOpen(true)} className="relative p-2 text-foreground hover:text-primary transition-colors">
+            <ShoppingBag className="h-5 w-5" />
+            {itemCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-[10px] font-body w-5 h-5 flex items-center justify-center rounded-full">
+                {itemCount}
+              </span>
+            )}
+          </button>
+
+          <button onClick={() => setMobileOpen(!mobileOpen)} className="md:hidden p-2 text-foreground">
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </nav>
+
+      {/* Mobile menu */}
+      {mobileOpen && (
+        <div className="md:hidden bg-background/95 backdrop-blur-md border-t border-border">
+          <ul className="flex flex-col items-center py-6 gap-6">
+            {navItems.map((item) => (
+              <li key={item.label}>
+                <a
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="font-body text-sm letter-wide uppercase text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {item.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </header>
   );
 };

@@ -1,8 +1,10 @@
 import heroImage from "@/assets/hero-fashion.jpg";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { getSiteData } from "@/lib/siteData";
 
 const AboutSection = () => {
-  const data = getSiteData();
+  const { data: settings } = useSiteSettings();
+  const fallback = getSiteData();
 
   return (
     <section id="sobre" className="py-32 px-6">
@@ -13,10 +15,16 @@ const AboutSection = () => {
           </div>
           <div className="lg:pl-8">
             <p className="font-body text-xs letter-wider uppercase text-muted-foreground mb-4">SOBRE NÓS</p>
-            <h2 className="font-display text-4xl md:text-5xl text-foreground mb-8">{data.aboutTitle}</h2>
+            <h2 className="font-display text-4xl md:text-5xl text-foreground mb-8">
+              {settings?.about_title || fallback.aboutTitle}
+            </h2>
             <div className="space-y-6">
-              <p className="font-body text-muted-foreground leading-relaxed">{data.aboutText1}</p>
-              <p className="font-body text-muted-foreground leading-relaxed">{data.aboutText2}</p>
+              <p className="font-body text-muted-foreground leading-relaxed">
+                {settings?.about_text1 || fallback.aboutText1}
+              </p>
+              <p className="font-body text-muted-foreground leading-relaxed">
+                {settings?.about_text2 || fallback.aboutText2}
+              </p>
             </div>
             <div className="grid grid-cols-3 gap-8 mt-12 pt-12 border-t border-border">
               {[
