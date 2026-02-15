@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import logo from "@/assets/logo.jpeg";
 
 const navItems = [
   { label: "Coleção", href: "#colecao" },
@@ -21,9 +22,10 @@ const Navbar = () => {
         scrolled ? "bg-background/90 backdrop-blur-md border-b border-border" : "bg-transparent"
       }`}
     >
-      <nav className="container mx-auto flex items-center justify-between px-6 py-5">
-        <a href="#" className="font-display text-xl tracking-[0.3em] text-foreground">
-          MARTINS CLASS
+      <nav className="container mx-auto flex items-center justify-between px-6 py-3">
+        <a href="#" className="flex items-center gap-3">
+          <img src={logo} alt="Martins Class" className="h-12 w-12 object-contain rounded-full" />
+          <span className="font-display text-lg tracking-[0.2em] text-foreground hidden sm:inline">MARTINS CLASS</span>
         </a>
         <ul className="hidden md:flex items-center gap-10">
           {navItems.map((item) => (

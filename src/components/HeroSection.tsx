@@ -1,6 +1,10 @@
 import heroImage from "@/assets/hero-fashion.jpg";
+import logo from "@/assets/logo.jpeg";
+import { getSiteData } from "@/lib/siteData";
 
 const HeroSection = () => {
+  const data = getSiteData();
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background image */}
@@ -15,14 +19,17 @@ const HeroSection = () => {
 
       {/* Content */}
       <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
+        <div className="flex justify-center mb-6 animate-fade-in" style={{ animationDelay: "0.1s" }}>
+          <img src={logo} alt="Martins Class Logo" className="h-28 w-28 object-contain rounded-full" />
+        </div>
         <p className="font-body text-xs letter-wider uppercase text-muted-foreground mb-6 animate-fade-in" style={{ animationDelay: "0.2s" }}>
-          Nova Coleção 2026
+          {data.heroSubtitle}
         </p>
         <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-normal text-foreground mb-8 animate-fade-in-up" style={{ animationDelay: "0.4s", opacity: 0 }}>
-          Martins Class
+          {data.heroTitle}
         </h1>
         <p className="font-body text-base md:text-lg text-muted-foreground max-w-xl mx-auto mb-12 animate-fade-in-up leading-relaxed" style={{ animationDelay: "0.6s", opacity: 0 }}>
-          Elegância atemporal para quem busca peças únicas. Roupas que contam histórias e definem estilos.
+          {data.heroDescription}
         </p>
         <div className="flex items-center justify-center gap-6 animate-fade-in-up" style={{ animationDelay: "0.8s", opacity: 0 }}>
           <a

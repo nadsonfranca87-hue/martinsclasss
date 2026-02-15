@@ -1,24 +1,27 @@
+import logo from "@/assets/logo.jpeg";
+import { getSiteData } from "@/lib/siteData";
+
 const Footer = () => {
+  const data = getSiteData();
+
   return (
     <footer className="border-t border-border py-16 px-6">
       <div className="container mx-auto">
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-          <a href="#" className="font-display text-xl tracking-[0.3em] text-foreground">
-            MARTINS CLASS
+          <a href="#" className="flex items-center gap-3">
+            <img src={logo} alt="Martins Class" className="h-10 w-10 object-contain rounded-full" />
+            <span className="font-display text-lg tracking-[0.2em] text-foreground">MARTINS CLASS</span>
           </a>
           <p className="font-body text-xs text-muted-foreground">
             © 2026 Martins Class. Todos os direitos reservados.
           </p>
           <div className="flex gap-6">
-            {["Instagram", "Pinterest", "WhatsApp"].map((social) => (
-              <a
-                key={social}
-                href="#"
-                className="font-body text-xs text-muted-foreground hover:text-primary transition-colors duration-300"
-              >
-                {social}
-              </a>
-            ))}
+            <a href={data.whatsappLink} target="_blank" rel="noopener noreferrer" className="font-body text-xs text-muted-foreground hover:text-primary transition-colors duration-300">
+              WhatsApp
+            </a>
+            <a href={data.instagramLink} target="_blank" rel="noopener noreferrer" className="font-body text-xs text-muted-foreground hover:text-primary transition-colors duration-300">
+              Instagram
+            </a>
           </div>
         </div>
       </div>
