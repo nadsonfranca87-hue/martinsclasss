@@ -66,7 +66,7 @@ const CartDrawer = () => {
   return (
     <div className="fixed inset-0 z-[60]">
       <div className="absolute inset-0 bg-background/60 backdrop-blur-sm" onClick={() => setIsOpen(false)} />
-      <div className="absolute right-0 top-0 bottom-0 w-full max-w-md bg-card border-l border-border flex flex-col">
+      <div className="absolute right-0 top-0 bottom-0 w-full sm:max-w-md bg-card border-l border-border flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
           <div className="flex items-center gap-2">

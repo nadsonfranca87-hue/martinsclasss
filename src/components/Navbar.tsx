@@ -15,10 +15,19 @@ const Navbar = () => {
   const { itemCount, setIsOpen } = useCart();
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 50);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50);
+      if (mobileOpen) setMobileOpen(false);
+    };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [mobileOpen]);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileOpen]);
 
   return (
     <header
@@ -26,10 +35,10 @@ const Navbar = () => {
         scrolled ? "bg-background/90 backdrop-blur-md border-b border-border" : "bg-transparent"
       }`}
     >
-      <nav className="container mx-auto flex items-center justify-between px-6 py-3">
-        <a href="#" className="flex items-center gap-3">
-          <img src={logo} alt="Martins Class" className="h-12 w-12 object-contain rounded-full" />
-          <span className="font-display text-lg tracking-[0.2em] text-foreground hidden sm:inline">MARTINS CLASS</span>
+      <nav className="container mx-auto flex items-center justify-between px-4 sm:px-6 py-3">
+        <a href="#" className="flex items-center gap-2 sm:gap-3">
+          <img src={logo} alt="Martins Class" className="h-10 w-10 sm:h-12 sm:w-12 object-contain rounded-full" />
+          <span className="font-display text-base sm:text-lg tracking-[0.15em] sm:tracking-[0.2em] text-foreground hidden xs:inline">MARTINS CLASS</span>
         </a>
 
         <ul className="hidden md:flex items-center gap-10">
@@ -42,7 +51,7 @@ const Navbar = () => {
           ))}
         </ul>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <button onClick={() => setIsOpen(true)} className="relative p-2 text-foreground hover:text-primary transition-colors">
             <ShoppingBag className="h-5 w-5" />
             {itemCount > 0 && (
@@ -58,24 +67,26 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Mobile menu */}
-      {mobileOpen && (
-        <div className="md:hidden bg-background/95 backdrop-blur-md border-t border-border">
-          <ul className="flex flex-col items-center py-6 gap-6">
-            {navItems.map((item) => (
-              <li key={item.label}>
-                <a
-                  href={item.href}
-                  onClick={() => setMobileOpen(false)}
-                  className="font-body text-sm letter-wide uppercase text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {item.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      {/* Mobile fullscreen menu */}
+      <div
+        className={`md:hidden fixed inset-0 top-[56px] bg-background/98 backdrop-blur-lg transition-all duration-300 ${
+          mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        }`}
+      >
+        <ul className="flex flex-col items-center justify-center h-full gap-10">
+          {navItems.map((item) => (
+            <li key={item.label}>
+              <a
+                href={item.href}
+                onClick={() => setMobileOpen(false)}
+                className="font-display text-2xl text-foreground hover:text-primary transition-colors"
+              >
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
     </header>
   );
 };
