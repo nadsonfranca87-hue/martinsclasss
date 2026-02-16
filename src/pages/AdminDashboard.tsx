@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { Package, Settings, Tag, ShoppingCart, LogOut, ExternalLink } from "lucide-react";
+import { Package, Settings, Tag, ShoppingCart, LogOut, ExternalLink, LayoutDashboard } from "lucide-react";
 import ProductsTab from "@/components/admin/ProductsTab";
 import CategoriesTab from "@/components/admin/CategoriesTab";
 import OrdersTab from "@/components/admin/OrdersTab";
@@ -23,51 +23,94 @@ const AdminDashboard = () => {
     navigate("/painel");
   };
 
-  if (loading) return <div className="min-h-screen bg-background flex items-center justify-center"><p className="font-body text-muted-foreground">Carregando...</p></div>;
+  if (loading) return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="text-center space-y-3">
+        <LayoutDashboard className="h-8 w-8 text-primary mx-auto animate-pulse" />
+        <p className="font-body text-sm text-muted-foreground">Carregando painel...</p>
+      </div>
+    </div>
+  );
 
   const tabs = [
     { id: "products", label: "Produtos", icon: Package },
     { id: "categories", label: "Categorias", icon: Tag },
     { id: "orders", label: "Pedidos", icon: ShoppingCart },
-    { id: "settings", label: "Configurações", icon: Settings },
+    { id: "settings", label: "Config", icon: Settings },
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="border-b border-border px-6 py-4 flex items-center justify-between">
-        <h1 className="font-display text-xl text-foreground">Painel — Martins Class</h1>
-        <div className="flex gap-4 items-center">
-          <a href="/" target="_blank" className="font-body text-xs letter-wide uppercase text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-            <ExternalLink className="h-3 w-3" /> Ver Site
+    <div className="min-h-screen bg-background flex flex-col">
+      {/* Top Header */}
+      <header className="bg-card border-b border-border px-4 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-30">
+        <div className="flex items-center gap-3">
+          <LayoutDashboard className="h-5 w-5 text-primary hidden sm:block" />
+          <h1 className="font-display text-base sm:text-lg text-foreground">Painel Admin</h1>
+        </div>
+        <div className="flex gap-3 items-center">
+          <a
+            href="/"
+            target="_blank"
+            className="font-body text-[10px] sm:text-xs letter-wide uppercase text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Ver Site</span>
           </a>
-          <button onClick={handleLogout} className="font-body text-xs letter-wide uppercase text-destructive hover:text-destructive/80 transition-colors flex items-center gap-1">
-            <LogOut className="h-3 w-3" /> Sair
+          <button
+            onClick={handleLogout}
+            className="font-body text-[10px] sm:text-xs letter-wide uppercase text-destructive hover:text-destructive/80 transition-colors flex items-center gap-1"
+          >
+            <LogOut className="h-3.5 w-3.5" />
+            <span className="hidden sm:inline">Sair</span>
           </button>
         </div>
-      </div>
+      </header>
 
-      <div className="flex">
-        <div className="w-56 border-r border-border min-h-[calc(100vh-65px)] p-4 space-y-1">
+      <div className="flex flex-1 overflow-hidden">
+        {/* Desktop Sidebar */}
+        <aside className="hidden md:flex w-52 border-r border-border flex-col bg-card/50 p-3 gap-1">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`w-full text-left px-4 py-3 font-body text-sm transition-colors flex items-center gap-2 ${
-                activeTab === tab.id ? "bg-primary/10 text-primary border-l-2 border-primary" : "text-muted-foreground hover:text-foreground"
+              className={`w-full text-left px-3 py-2.5 font-body text-sm transition-all duration-200 flex items-center gap-2.5 rounded-sm ${
+                activeTab === tab.id
+                  ? "bg-primary/15 text-primary border-l-2 border-primary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
               }`}
             >
-              <tab.icon className="h-4 w-4" /> {tab.label}
+              <tab.icon className="h-4 w-4 flex-shrink-0" />
+              {tab.label}
             </button>
           ))}
-        </div>
+        </aside>
 
-        <div className="flex-1 p-8 max-w-6xl overflow-auto">
-          {activeTab === "products" && <ProductsTab />}
-          {activeTab === "categories" && <CategoriesTab />}
-          {activeTab === "orders" && <OrdersTab />}
-          {activeTab === "settings" && <SettingsTab />}
-        </div>
+        {/* Main Content */}
+        <main className="flex-1 overflow-auto pb-20 md:pb-6 p-4 sm:p-6 lg:p-8">
+          <div className="max-w-5xl mx-auto">
+            {activeTab === "products" && <ProductsTab />}
+            {activeTab === "categories" && <CategoriesTab />}
+            {activeTab === "orders" && <OrdersTab />}
+            {activeTab === "settings" && <SettingsTab />}
+          </div>
+        </main>
       </div>
+
+      {/* Mobile Bottom Nav */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border flex z-30">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`flex-1 flex flex-col items-center gap-1 py-2.5 transition-colors ${
+              activeTab === tab.id ? "text-primary" : "text-muted-foreground"
+            }`}
+          >
+            <tab.icon className="h-5 w-5" />
+            <span className="font-body text-[9px] letter-wide uppercase">{tab.label}</span>
+          </button>
+        ))}
+      </nav>
     </div>
   );
 };

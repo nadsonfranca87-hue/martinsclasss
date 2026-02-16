@@ -1,47 +1,86 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { ShoppingCart, RefreshCw } from "lucide-react";
 
 export default function OrdersTab() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const fetchOrders = () => {
+    setLoading(true);
     supabase.from("orders").select("*").order("created_at", { ascending: false }).then(({ data }) => {
       setOrders(data || []);
       setLoading(false);
     });
-  }, []);
+  };
 
-  if (loading) return <p className="font-body text-muted-foreground">Carregando...</p>;
+  useEffect(() => { fetchOrders(); }, []);
+
+  const statusMap: Record<string, { label: string; color: string }> = {
+    pending: { label: "Pendente", color: "bg-yellow-500/20 text-yellow-400" },
+    confirmed: { label: "Confirmado", color: "bg-green-500/20 text-green-400" },
+    delivered: { label: "Entregue", color: "bg-blue-500/20 text-blue-400" },
+    cancelled: { label: "Cancelado", color: "bg-destructive/20 text-destructive" },
+  };
+
+  if (loading) return (
+    <div className="space-y-4">
+      <div className="h-8 bg-secondary rounded w-48 animate-pulse" />
+      {[1,2,3].map(i => <div key={i} className="h-24 bg-secondary rounded animate-pulse" />)}
+    </div>
+  );
 
   return (
-    <div className="space-y-6">
-      <h2 className="font-display text-2xl text-foreground">Pedidos ({orders.length})</h2>
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <h2 className="font-display text-xl sm:text-2xl text-foreground">
+          Pedidos <span className="text-muted-foreground text-base">({orders.length})</span>
+        </h2>
+        <button onClick={fetchOrders} className="p-2 text-muted-foreground hover:text-foreground hover:bg-secondary rounded-sm transition-colors" title="Atualizar">
+          <RefreshCw className="h-4 w-4" />
+        </button>
+      </div>
+
       {orders.length === 0 ? (
-        <p className="font-body text-muted-foreground">Nenhum pedido ainda.</p>
+        <div className="border border-border bg-card/50 p-10 flex flex-col items-center gap-3 rounded-sm">
+          <ShoppingCart className="h-10 w-10 text-muted-foreground/30" />
+          <p className="font-body text-sm text-muted-foreground">Nenhum pedido ainda.</p>
+        </div>
       ) : (
-        <div className="space-y-4">
-          {orders.map((order) => (
-            <div key={order.id} className="border border-border p-4 space-y-2">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="font-body text-sm font-medium text-foreground">{order.customer_name}</p>
-                  <p className="font-body text-xs text-muted-foreground">{order.customer_whatsapp} — {order.customer_address}</p>
+        <div className="space-y-3">
+          {orders.map((order) => {
+            const status = statusMap[order.status] || statusMap.pending;
+            return (
+              <div key={order.id} className="border border-border bg-card/50 p-4 space-y-3 rounded-sm">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                  <div>
+                    <p className="font-body text-sm font-medium text-foreground">{order.customer_name}</p>
+                    <p className="font-body text-xs text-muted-foreground mt-0.5">{order.customer_whatsapp}</p>
+                    <p className="font-body text-[10px] text-muted-foreground">{order.customer_address}</p>
+                  </div>
+                  <div className="flex items-center gap-3 sm:text-right">
+                    <span className={`font-body text-[10px] letter-wide uppercase px-2 py-1 rounded-sm ${status.color}`}>
+                      {status.label}
+                    </span>
+                    <div>
+                      <p className="font-display text-lg text-primary">R$ {Number(order.total).toFixed(2)}</p>
+                      <p className="font-body text-[10px] text-muted-foreground">{new Date(order.created_at).toLocaleString("pt-BR")}</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="font-display text-lg text-primary">R$ {Number(order.total).toFixed(2)}</p>
-                  <p className="font-body text-[10px] text-muted-foreground">{new Date(order.created_at).toLocaleString("pt-BR")}</p>
+                <div className="border-t border-border pt-2 space-y-1">
+                  {(order.items as any[]).map((item: any, i: number) => (
+                    <div key={i} className="flex justify-between items-center">
+                      <p className="font-body text-xs text-muted-foreground">
+                        {item.title} <span className="text-muted-foreground/60">({item.key})</span> × {item.quantity}
+                      </p>
+                      <p className="font-body text-xs text-foreground">R$ {(item.price * item.quantity).toFixed(2)}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
-              <div className="border-t border-border pt-2">
-                {(order.items as any[]).map((item: any, i: number) => (
-                  <p key={i} className="font-body text-xs text-muted-foreground">
-                    {item.title} (KEY: {item.key}) x{item.quantity} — R$ {(item.price * item.quantity).toFixed(2)}
-                  </p>
-                ))}
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
