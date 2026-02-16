@@ -59,7 +59,7 @@ const defaultData: SiteData = {
   contactEmail: "contato@martinsclass.com.br",
   contactPhone: "+55 11 9999-0000",
   contactAddress: "Rua Oscar Freire, 123 — São Paulo, SP",
-  whatsappLink: "https://wa.me/5511999990000",
+  whatsappLink: "https://wa.me/5585997692382",
   instagramLink: "https://instagram.com/martinsclass",
   products: defaultProducts,
 };
