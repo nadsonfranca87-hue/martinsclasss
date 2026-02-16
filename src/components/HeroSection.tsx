@@ -10,11 +10,12 @@ const HeroSection = () => {
   const heroTitle = settings?.hero_title || fallback.heroTitle;
   const heroSubtitle = settings?.hero_subtitle || fallback.heroSubtitle;
   const heroDescription = settings?.hero_description || fallback.heroDescription;
+  const bgImage = settings?.hero_bg_image || heroImage;
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       <div className="absolute inset-0">
-        <img src={heroImage} alt="Moda elegante - coleção atual" className="w-full h-full object-cover opacity-40" />
+        <img src={bgImage} alt="Moda elegante - coleção atual" className="w-full h-full object-cover opacity-40" />
         <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/30 to-background" />
       </div>
 
