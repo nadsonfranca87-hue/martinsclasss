@@ -8,32 +8,43 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    let mounted = true;
+
+    const checkAdmin = async (userId: string) => {
+      const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+      return data?.some((r: any) => r.role === "admin") ?? false;
+    };
+
+    // Get initial session
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!mounted) return;
       const u = session?.user ?? null;
       setUser(u);
       if (u) {
-        const { data } = await supabase.from("user_roles").select("role").eq("user_id", u.id);
-        setIsAdmin(data?.some((r: any) => r.role === "admin") ?? false);
+        const admin = await checkAdmin(u.id);
+        if (mounted) setIsAdmin(admin);
+      }
+      if (mounted) setLoading(false);
+    });
+
+    // Listen for changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!mounted) return;
+      const u = session?.user ?? null;
+      setUser(u);
+      if (u) {
+        const admin = await checkAdmin(u.id);
+        if (mounted) setIsAdmin(admin);
       } else {
         setIsAdmin(false);
       }
       setLoading(false);
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      const u = session?.user ?? null;
-      setUser(u);
-      if (u) {
-        supabase.from("user_roles").select("role").eq("user_id", u.id).then(({ data }) => {
-          setIsAdmin(data?.some((r: any) => r.role === "admin") ?? false);
-          setLoading(false);
-        });
-      } else {
-        setLoading(false);
-      }
-    });
-
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
