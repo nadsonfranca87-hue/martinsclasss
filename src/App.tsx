@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminSetup from "./pages/AdminSetup";
+import ProductDetail from "./pages/ProductDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,6 +22,7 @@ const App = () => (
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/produto/:id" element={<ProductDetail />} />
             <Route path="/painel" element={<AdminLogin />} />
             <Route path="/painel/setup" element={<AdminSetup />} />
             <Route path="/painel/dashboard" element={<AdminDashboard />} />

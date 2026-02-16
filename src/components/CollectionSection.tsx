@@ -1,21 +1,26 @@
 import { useState } from "react";
-import { useProducts, useCategories } from "@/hooks/useProducts";
+import { useNavigate } from "react-router-dom";
+import { useProducts, useCategories, useStyles } from "@/hooks/useProducts";
 import { useCart } from "@/hooks/useCart";
 import { ShoppingBag, Plus } from "lucide-react";
 import { getSiteData } from "@/lib/siteData";
 
 const CollectionSection = () => {
   const [activeCategory, setActiveCategory] = useState("Todos");
+  const [activeStyle, setActiveStyle] = useState("Todos");
   const { data: products, isLoading } = useProducts();
   const { data: categories } = useCategories();
+  const { data: styles } = useStyles();
   const { addItem } = useCart();
+  const navigate = useNavigate();
   const fallbackData = getSiteData();
 
   const categoryNames = ["Todos", ...(categories?.map((c) => c.name) || [])];
+  const styleNames = ["Todos", ...(styles?.map((s) => s.name) || [])];
 
   const hasDbProducts = products && products.length > 0;
 
-  const filtered = hasDbProducts
+  let filtered = hasDbProducts
     ? activeCategory === "Todos"
       ? products
       : products.filter((p) => p.category?.name === activeCategory)
@@ -23,7 +28,13 @@ const CollectionSection = () => {
       ? fallbackData.products
       : fallbackData.products.filter((p) => p.category === activeCategory);
 
-  const handleAddToCart = (product: any) => {
+  // Apply style filter for DB products
+  if (hasDbProducts && activeStyle !== "Todos") {
+    filtered = (filtered as any[]).filter((p: any) => p.style?.name === activeStyle);
+  }
+
+  const handleAddToCart = (e: React.MouseEvent, product: any) => {
+    e.stopPropagation();
     if (hasDbProducts) {
       addItem({
         id: product.id,
@@ -43,6 +54,12 @@ const CollectionSection = () => {
     }
   };
 
+  const handleProductClick = (product: any) => {
+    if (hasDbProducts) {
+      navigate(`/produto/${product.id}`);
+    }
+  };
+
   return (
     <section id="colecao" className="py-16 sm:py-24 lg:py-32 px-4 sm:px-6">
       <div className="container mx-auto">
@@ -54,8 +71,8 @@ const CollectionSection = () => {
           </p>
         </div>
 
-        {/* Scrollable categories on mobile */}
-        <div className="flex items-center gap-4 sm:gap-6 md:gap-8 mb-10 sm:mb-16 overflow-x-auto pb-2 sm:pb-0 sm:flex-wrap sm:justify-center scrollbar-hide">
+        {/* Category filter */}
+        <div className="flex items-center gap-4 sm:gap-6 md:gap-8 mb-4 overflow-x-auto pb-2 sm:pb-0 sm:flex-wrap sm:justify-center scrollbar-hide">
           {categoryNames.map((cat) => (
             <button
               key={cat}
@@ -70,6 +87,25 @@ const CollectionSection = () => {
             </button>
           ))}
         </div>
+
+        {/* Style filter */}
+        {hasDbProducts && styleNames.length > 1 && (
+          <div className="flex items-center gap-3 sm:gap-4 mb-10 sm:mb-16 overflow-x-auto pb-2 sm:pb-0 sm:flex-wrap sm:justify-center scrollbar-hide">
+            {styleNames.map((style) => (
+              <button
+                key={style}
+                onClick={() => setActiveStyle(style)}
+                className={`font-body text-[10px] letter-wide uppercase transition-colors duration-300 px-3 py-1 border whitespace-nowrap flex-shrink-0 ${
+                  activeStyle === style
+                    ? "text-primary border-primary bg-primary/10"
+                    : "text-muted-foreground border-border hover:text-foreground hover:border-foreground/30"
+                }`}
+              >
+                {style}
+              </button>
+            ))}
+          </div>
+        )}
 
         {isLoading ? (
           <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
@@ -92,7 +128,7 @@ const CollectionSection = () => {
               const priceDisplay = hasDbProducts ? `R$ ${Number(product.price).toFixed(2)}` : product.price;
 
               return (
-                <div key={product.id} className="group cursor-pointer">
+                <div key={product.id} className="group cursor-pointer" onClick={() => handleProductClick(product)}>
                   <div className="relative overflow-hidden mb-2 sm:mb-4 bg-secondary aspect-[3/4]">
                     {image && (
                       <img
@@ -103,10 +139,9 @@ const CollectionSection = () => {
                       />
                     )}
                     <div className="absolute inset-0 bg-background/0 group-hover:bg-background/20 transition-colors duration-500" />
-                    
-                    {/* Desktop: hover button */}
+
                     <button
-                      onClick={() => handleAddToCart(product)}
+                      onClick={(e) => handleAddToCart(e, product)}
                       className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 bg-primary text-primary-foreground p-2 sm:p-3 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-300 hover:bg-primary/90"
                     >
                       <Plus className="h-4 w-4 sm:hidden" />
