@@ -1,20 +1,20 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
+
+async function checkAdmin(userId: string) {
+  try {
+    const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+    return data?.some((r: any) => r.role === "admin") ?? false;
+  } catch {
+    return false;
+  }
+}
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
-
-  const checkAdmin = useCallback(async (userId: string) => {
-    try {
-      const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
-      return data?.some((r: any) => r.role === "admin") ?? false;
-    } catch {
-      return false;
-    }
-  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -60,7 +60,7 @@ export function useAuth() {
       clearTimeout(timeout);
       subscription.unsubscribe();
     };
-  }, [checkAdmin]);
+  }, []);
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
