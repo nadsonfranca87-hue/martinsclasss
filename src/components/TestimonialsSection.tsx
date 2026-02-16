@@ -29,7 +29,7 @@ const TestimonialsSection = () => {
     <section className="relative py-20 sm:py-28 lg:py-36 px-4 sm:px-6 overflow-hidden">
       {/* Background */}
       <div className="absolute inset-0">
-        <img src={testimonialsBg} alt="" className="w-full h-full object-cover opacity-20" />
+        <img src={testimonialsBg} alt="" className="w-full h-full object-cover object-center opacity-20" />
         <div className="absolute inset-0 bg-gradient-to-b from-background via-background/80 to-background" />
       </div>
 

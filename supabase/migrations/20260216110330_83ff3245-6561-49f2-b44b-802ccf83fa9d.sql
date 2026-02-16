@@ -1,0 +1,60 @@
+
+-- Drop all RESTRICTIVE policies and recreate as PERMISSIVE
+
+-- site_settings
+DROP POLICY IF EXISTS "Admins can manage site settings" ON public.site_settings;
+DROP POLICY IF EXISTS "Site settings are viewable by everyone" ON public.site_settings;
+CREATE POLICY "Site settings are viewable by everyone" ON public.site_settings FOR SELECT USING (true);
+CREATE POLICY "Admins can manage site settings" ON public.site_settings FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
+
+-- products
+DROP POLICY IF EXISTS "Admins can manage products" ON public.products;
+DROP POLICY IF EXISTS "Products are viewable by everyone" ON public.products;
+CREATE POLICY "Products are viewable by everyone" ON public.products FOR SELECT USING (true);
+CREATE POLICY "Admins can manage products" ON public.products FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
+
+-- categories
+DROP POLICY IF EXISTS "Admins can manage categories" ON public.categories;
+DROP POLICY IF EXISTS "Categories are viewable by everyone" ON public.categories;
+CREATE POLICY "Categories are viewable by everyone" ON public.categories FOR SELECT USING (true);
+CREATE POLICY "Admins can manage categories" ON public.categories FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
+
+-- brands
+DROP POLICY IF EXISTS "Admins can manage brands" ON public.brands;
+DROP POLICY IF EXISTS "Brands are viewable by everyone" ON public.brands;
+CREATE POLICY "Brands are viewable by everyone" ON public.brands FOR SELECT USING (true);
+CREATE POLICY "Admins can manage brands" ON public.brands FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
+
+-- styles
+DROP POLICY IF EXISTS "Admins can manage styles" ON public.styles;
+DROP POLICY IF EXISTS "Styles are viewable by everyone" ON public.styles;
+CREATE POLICY "Styles are viewable by everyone" ON public.styles FOR SELECT USING (true);
+CREATE POLICY "Admins can manage styles" ON public.styles FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
+
+-- testimonials
+DROP POLICY IF EXISTS "Admins can manage testimonials" ON public.testimonials;
+DROP POLICY IF EXISTS "Testimonials viewable by everyone" ON public.testimonials;
+CREATE POLICY "Testimonials viewable by everyone" ON public.testimonials FOR SELECT USING (true);
+CREATE POLICY "Admins can manage testimonials" ON public.testimonials FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
+
+-- product_images
+DROP POLICY IF EXISTS "Admins can manage product images" ON public.product_images;
+DROP POLICY IF EXISTS "Product images are viewable by everyone" ON public.product_images;
+CREATE POLICY "Product images are viewable by everyone" ON public.product_images FOR SELECT USING (true);
+CREATE POLICY "Admins can manage product images" ON public.product_images FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
+
+-- shipping_zones
+DROP POLICY IF EXISTS "Admins can manage shipping zones" ON public.shipping_zones;
+DROP POLICY IF EXISTS "Shipping zones viewable by everyone" ON public.shipping_zones;
+CREATE POLICY "Shipping zones viewable by everyone" ON public.shipping_zones FOR SELECT USING (true);
+CREATE POLICY "Admins can manage shipping zones" ON public.shipping_zones FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
+
+-- orders
+DROP POLICY IF EXISTS "Admins can manage orders" ON public.orders;
+DROP POLICY IF EXISTS "Admins can delete orders" ON public.orders;
+DROP POLICY IF EXISTS "Orders can be created by anyone" ON public.orders;
+DROP POLICY IF EXISTS "Orders viewable by admins" ON public.orders;
+CREATE POLICY "Orders can be created by anyone" ON public.orders FOR INSERT WITH CHECK (true);
+CREATE POLICY "Orders viewable by admins" ON public.orders FOR SELECT TO authenticated USING (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY "Admins can update orders" ON public.orders FOR UPDATE TO authenticated USING (public.has_role(auth.uid(), 'admin')) WITH CHECK (public.has_role(auth.uid(), 'admin'));
+CREATE POLICY "Admins can delete orders" ON public.orders FOR DELETE TO authenticated USING (public.has_role(auth.uid(), 'admin'));
