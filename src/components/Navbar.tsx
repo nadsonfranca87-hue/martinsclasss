@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { ShoppingBag, Menu, X } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
-import logo from "@/assets/logo.jpeg";
+import { useSiteSettings } from "@/hooks/useSiteSettings";
+import defaultLogo from "@/assets/logo.jpeg";
 
 const navItems = [
   { label: "Coleção", href: "#colecao" },
@@ -13,6 +14,8 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const { itemCount, setIsOpen } = useCart();
+  const { data: settings } = useSiteSettings();
+  const logo = settings?.logo_url || defaultLogo;
 
   useEffect(() => {
     const handleScroll = () => {

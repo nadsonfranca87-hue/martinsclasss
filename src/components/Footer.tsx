@@ -1,10 +1,11 @@
-import logo from "@/assets/logo.jpeg";
+import defaultLogo from "@/assets/logo.jpeg";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { getSiteData } from "@/lib/siteData";
 
 const Footer = () => {
   const { data: settings } = useSiteSettings();
   const fallback = getSiteData();
+  const logo = settings?.logo_url || defaultLogo;
 
   return (
     <footer className="border-t border-border py-10 sm:py-16 px-4 sm:px-6">
