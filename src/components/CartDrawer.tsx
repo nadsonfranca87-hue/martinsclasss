@@ -52,7 +52,7 @@ const CartDrawer = () => {
       `*Total: R$ ${total.toFixed(2)}*`
     );
 
-    const whatsappNumber = settings?.whatsapp_number || "5511999990000";
+    const whatsappNumber = settings?.whatsapp_number || "5585997692382";
     window.open(`https://wa.me/${whatsappNumber}?text=${msg}`, "_blank");
 
     toast.success("Seu pedido foi enviado com sucesso!");
