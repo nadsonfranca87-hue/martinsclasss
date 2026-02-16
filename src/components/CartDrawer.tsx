@@ -1,16 +1,21 @@
 import { useState } from "react";
 import { useCart } from "@/hooks/useCart";
-import { X, Minus, Plus, ShoppingBag, Trash2 } from "lucide-react";
+import { X, Minus, Plus, ShoppingBag, Trash2, Truck, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { useShippingCalculator } from "@/hooks/useShipping";
 import { toast } from "sonner";
 
 const CartDrawer = () => {
   const { items, removeItem, updateQuantity, clearCart, total, isOpen, setIsOpen } = useCart();
   const { data: settings } = useSiteSettings();
+  const shipping = useShippingCalculator();
   const [showCheckout, setShowCheckout] = useState(false);
   const [form, setForm] = useState({ name: "", address: "", whatsapp: "" });
   const [sending, setSending] = useState(false);
+
+  const shippingCost = shipping.result?.price ?? 0;
+  const grandTotal = total + shippingCost;
 
   if (!isOpen) return null;
 
@@ -35,7 +40,7 @@ const CartDrawer = () => {
       customer_address: form.address,
       customer_whatsapp: form.whatsapp,
       items: orderItems,
-      total,
+      total: grandTotal,
     });
 
     // Build WhatsApp message
@@ -43,13 +48,19 @@ const CartDrawer = () => {
       .map((i) => `• ${i.title} (KEY: ${i.productKey}) x${i.quantity} - R$ ${(i.price * i.quantity).toFixed(2)}`)
       .join("\n");
 
+    const shippingText = shipping.result
+      ? `*Frete (${shipping.result.zone.name}):* R$ ${shippingCost.toFixed(2)} (${shipping.result.days} dias úteis)`
+      : "*Frete:* A combinar";
+
     const msg = encodeURIComponent(
       `🛒 *Novo Pedido - Martins Class*\n\n` +
       `*Cliente:* ${form.name}\n` +
       `*Endereço:* ${form.address}\n` +
+      `*CEP:* ${shipping.cep}\n` +
       `*WhatsApp:* ${form.whatsapp}\n\n` +
       `*Produtos:*\n${itemsText}\n\n` +
-      `*Total: R$ ${total.toFixed(2)}*`
+      `${shippingText}\n` +
+      `*Total: R$ ${grandTotal.toFixed(2)}*`
     );
 
     const whatsappNumber = settings?.whatsapp_number || "5585997692382";
@@ -115,9 +126,50 @@ const CartDrawer = () => {
           <div className="border-t border-border p-6 space-y-4">
             {!showCheckout ? (
               <>
-                <div className="flex justify-between">
-                  <span className="font-body text-sm text-muted-foreground">Total</span>
-                  <span className="font-display text-xl text-foreground">R$ {total.toFixed(2)}</span>
+                {/* Shipping calculator */}
+                <div className="space-y-2">
+                  <label className="font-body text-[10px] letter-wide uppercase text-muted-foreground flex items-center gap-1">
+                    <Truck className="h-3 w-3" /> Calcular Frete
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Digite seu CEP"
+                      value={shipping.cep}
+                      onChange={(e) => shipping.setCep(e.target.value.replace(/\D/g, "").slice(0, 8))}
+                      className="flex-1 bg-secondary border border-border py-2 px-3 font-body text-sm text-foreground focus:outline-none focus:border-primary"
+                      maxLength={8}
+                    />
+                    <button
+                      onClick={shipping.calculate}
+                      className="font-body text-xs letter-wide uppercase bg-secondary border border-border text-foreground px-4 py-2 hover:border-primary transition-colors"
+                    >
+                      Calcular
+                    </button>
+                  </div>
+                  {shipping.error && <p className="font-body text-xs text-destructive">{shipping.error}</p>}
+                  {shipping.result && (
+                    <p className="font-body text-xs text-primary">
+                      {shipping.result.zone.name} — R$ {shipping.result.price.toFixed(2)} ({shipping.result.days} dias úteis)
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-1.5 pt-2">
+                  <div className="flex justify-between">
+                    <span className="font-body text-sm text-muted-foreground">Subtotal</span>
+                    <span className="font-body text-sm text-foreground">R$ {total.toFixed(2)}</span>
+                  </div>
+                  {shipping.result && (
+                    <div className="flex justify-between">
+                      <span className="font-body text-sm text-muted-foreground">Frete</span>
+                      <span className="font-body text-sm text-foreground">R$ {shippingCost.toFixed(2)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between border-t border-border pt-1.5">
+                    <span className="font-body text-sm text-muted-foreground">Total</span>
+                    <span className="font-display text-xl text-foreground">R$ {grandTotal.toFixed(2)}</span>
+                  </div>
                 </div>
                 <button
                   onClick={() => setShowCheckout(true)}
