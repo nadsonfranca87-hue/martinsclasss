@@ -18,7 +18,12 @@ const AdminSetup = () => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: window.location.origin },
+      options: {
+        emailRedirectTo: window.location.origin,
+        data: {
+          role: 'admin'
+        }
+      },
     });
 
     if (error) {
@@ -28,17 +33,26 @@ const AdminSetup = () => {
     }
 
     if (data.user) {
-      // Assign admin role - we use a direct insert since the user just signed up
-      // The RLS policy allows users to read their own roles, but we need a workaround for insert
-      // We'll use an edge function for this
+      // Assign admin role
       const { error: roleError } = await supabase.functions.invoke("assign-admin-role", {
         body: { userId: data.user.id },
       });
 
       if (roleError) {
-        toast.error("Conta criada, mas erro ao definir como admin. Tente novamente.");
+        toast.error("Conta criada, mas erro ao definir como admin. Entre em contato com suporte.");
+        setLoading(false);
+        return;
+      }
+
+      // If email confirmation is disabled, user is already logged in
+      // If confirmation is required, show message
+      if (data.session) {
+        toast.success("Conta admin criada com sucesso! Redirecionando...");
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        navigate("/painel/dashboard");
       } else {
-        toast.success("Conta admin criada com sucesso!");
+        toast.success("Conta criada! Faça login com suas credenciais.");
+        await new Promise(resolve => setTimeout(resolve, 1500));
         navigate("/painel");
       }
     }
@@ -64,6 +78,10 @@ const AdminSetup = () => {
             {loading ? "Criando..." : "Criar Conta Admin"}
           </button>
         </form>
+
+        <p className="font-body text-xs text-muted-foreground text-center mt-6">
+          Já tem uma conta? <a href="/painel" className="text-primary hover:text-primary/80 underline">Fazer login</a>
+        </p>
       </div>
     </div>
   );

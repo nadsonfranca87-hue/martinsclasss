@@ -22,7 +22,10 @@ const AdminLogin = () => {
     setLoading(true);
     const { error: err } = await signIn(email, password);
     if (err) {
-      setError("Email ou senha incorretos");
+      setError("Email ou senha incorretos. Se é o primeiro acesso, crie sua conta admin primeiro.");
+    } else {
+      // Wait a moment for auth state to update
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
     setLoading(false);
   };
@@ -62,7 +65,17 @@ const AdminLogin = () => {
               required
             />
           </div>
-          {error && <p className="font-body text-sm text-destructive">{error}</p>}
+          {error && (
+            <div className="space-y-3">
+              <p className="font-body text-sm text-destructive">{error}</p>
+              <a
+                href="/painel/setup"
+                className="block text-center font-body text-xs text-primary hover:text-primary/80 underline"
+              >
+                Criar primeira conta admin
+              </a>
+            </div>
+          )}
           <button
             type="submit"
             disabled={loading}
@@ -71,6 +84,10 @@ const AdminLogin = () => {
             {loading ? "Entrando..." : "Entrar"}
           </button>
         </form>
+
+        <p className="font-body text-xs text-muted-foreground text-center mt-6">
+          Primeiro acesso? <a href="/painel/setup" className="text-primary hover:text-primary/80 underline">Criar conta admin</a>
+        </p>
       </div>
     </div>
   );

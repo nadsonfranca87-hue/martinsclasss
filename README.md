@@ -1,73 +1,74 @@
-# Welcome to your Lovable project
+# Martins Class - Loja Online
 
-## Project info
+## Sobre o Projeto
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+Sistema completo de e-commerce para a loja Martins Class, especializada em moda elegante e atemporal.
 
-## How can I edit this code?
+## Como executar localmente
 
-There are several ways of editing your application.
+Requisitos: Node.js & npm instalados - [instalar com nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+Passos:
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# 1. Clone o repositório
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
+# 2. Entre no diretório do projeto
 cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
+# 3. Instale as dependências
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# 4. Configure as variáveis de ambiente
+# Crie um arquivo .env com as credenciais do Supabase
+
+# 5. Inicie o servidor de desenvolvimento
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
+## Tecnologias Utilizadas
 
 - Vite
 - TypeScript
 - React
+- Supabase (Backend)
 - shadcn-ui
 - Tailwind CSS
+- Stripe (Pagamentos)
 
-## How can I deploy this project?
+## Painel Administrativo
 
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
+Para acessar o painel admin:
 
-## Can I connect a custom domain to my Lovable project?
+1. Acesse `/painel/setup` para criar a primeira conta admin
+2. Faça login em `/painel` com suas credenciais
+3. Gerencie produtos, pedidos, categorias e configurações
 
-Yes, you can!
+## Funcionalidades
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- Catálogo de produtos com imagens e filtros
+- Carrinho de compras
+- Cálculo de frete por CEP
+- Checkout via WhatsApp ou pagamento online (Stripe)
+- Painel administrativo completo
+- Gerenciamento de categorias, estilos e marcas
+- Sistema de depoimentos
+- Configurações personalizáveis do site
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## Build para Produção
+
+```sh
+npm run build
+```
+
+## Deploy
+
+O projeto pode ser hospedado em qualquer plataforma que suporte aplicações React/Vite, como:
+
+- Vercel
+- Netlify
+- AWS Amplify
+- GitHub Pages
+
+Certifique-se de configurar as variáveis de ambiente do Supabase na plataforma escolhida.
