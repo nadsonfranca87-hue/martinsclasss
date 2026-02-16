@@ -197,6 +197,39 @@ export type Database = {
           },
         ]
       }
+      shipping_zones: {
+        Row: {
+          cep_end: string
+          cep_start: string
+          created_at: string | null
+          estimated_days: number
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+        }
+        Insert: {
+          cep_end: string
+          cep_start: string
+          created_at?: string | null
+          estimated_days?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          price?: number
+        }
+        Update: {
+          cep_end?: string
+          cep_start?: string
+          created_at?: string | null
+          estimated_days?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+        }
+        Relationships: []
+      }
       site_settings: {
         Row: {
           key: string

@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { Package, Settings, Tag, ShoppingCart, LogOut, ExternalLink, LayoutDashboard } from "lucide-react";
+import { Package, Settings, Tag, ShoppingCart, LogOut, ExternalLink, LayoutDashboard, Truck } from "lucide-react";
 import ProductsTab from "@/components/admin/ProductsTab";
 import CategoriesTab from "@/components/admin/CategoriesTab";
 import OrdersTab from "@/components/admin/OrdersTab";
 import SettingsTab from "@/components/admin/SettingsTab";
+import ShippingTab from "@/components/admin/ShippingTab";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -36,6 +37,7 @@ const AdminDashboard = () => {
     { id: "products", label: "Produtos", icon: Package },
     { id: "categories", label: "Categorias", icon: Tag },
     { id: "orders", label: "Pedidos", icon: ShoppingCart },
+    { id: "shipping", label: "Frete", icon: Truck },
     { id: "settings", label: "Config", icon: Settings },
   ];
 
@@ -91,6 +93,7 @@ const AdminDashboard = () => {
             {activeTab === "products" && <ProductsTab />}
             {activeTab === "categories" && <CategoriesTab />}
             {activeTab === "orders" && <OrdersTab />}
+            {activeTab === "shipping" && <ShippingTab />}
             {activeTab === "settings" && <SettingsTab />}
           </div>
         </main>
