@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
 
@@ -7,27 +7,27 @@ export function useAuth() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const checkAdmin = useCallback(async (userId: string) => {
+    try {
+      const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+      return data?.some((r: any) => r.role === "admin") ?? false;
+    } catch {
+      return false;
+    }
+  }, []);
+
   useEffect(() => {
     let mounted = true;
 
-    const checkAdmin = async (userId: string) => {
-      const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
-      return data?.some((r: any) => r.role === "admin") ?? false;
-    };
-
-    // Get initial session
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!mounted) return;
-      const u = session?.user ?? null;
-      setUser(u);
-      if (u) {
-        const admin = await checkAdmin(u.id);
-        if (mounted) setIsAdmin(admin);
+    // Safety timeout - never stay loading more than 5s
+    const timeout = setTimeout(() => {
+      if (mounted && loading) {
+        console.warn("Auth loading timeout - forcing complete");
+        setLoading(false);
       }
-      if (mounted) setLoading(false);
-    });
+    }, 5000);
 
-    // Listen for changes
+    // 1. Set up listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!mounted) return;
       const u = session?.user ?? null;
@@ -38,14 +38,29 @@ export function useAuth() {
       } else {
         setIsAdmin(false);
       }
-      setLoading(false);
+      if (mounted) setLoading(false);
+    });
+
+    // 2. Then get initial session
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!mounted) return;
+      const u = session?.user ?? null;
+      setUser(u);
+      if (u) {
+        const admin = await checkAdmin(u.id);
+        if (mounted) setIsAdmin(admin);
+      }
+      if (mounted) setLoading(false);
+    }).catch(() => {
+      if (mounted) setLoading(false);
     });
 
     return () => {
       mounted = false;
+      clearTimeout(timeout);
       subscription.unsubscribe();
     };
-  }, []);
+  }, [checkAdmin]);
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
