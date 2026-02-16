@@ -20,7 +20,9 @@ export default function SettingsTab() {
   const queryClient = useQueryClient();
   const [form, setForm] = useState<Record<string, string>>({});
   const bgFileRef = useRef<HTMLInputElement>(null);
+  const logoFileRef = useRef<HTMLInputElement>(null);
   const [uploadingBg, setUploadingBg] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
 
   useEffect(() => {
     if (settings) setForm({ ...settings });
@@ -52,6 +54,20 @@ export default function SettingsTab() {
     setForm({ ...form, hero_bg_image: publicUrl });
     setUploadingBg(false);
     toast.success("Imagem enviada! Salve para aplicar.");
+  };
+
+  const handleLogoUpload = async (files: FileList) => {
+    const file = files[0];
+    if (!file) return;
+    setUploadingLogo(true);
+    const ext = file.name.split(".").pop();
+    const path = `logo/${Date.now()}.${ext}`;
+    const { error: uploadErr } = await supabase.storage.from("site-assets").upload(path, file, { upsert: true });
+    if (uploadErr) { toast.error("Erro no upload"); setUploadingLogo(false); return; }
+    const { data: { publicUrl } } = supabase.storage.from("site-assets").getPublicUrl(path);
+    setForm({ ...form, logo_url: publicUrl });
+    setUploadingLogo(false);
+    toast.success("Logo enviada! Salve para aplicar.");
   };
 
   const applyColorPreset = (preset: typeof COLOR_PRESETS[0]) => {
@@ -135,6 +151,31 @@ export default function SettingsTab() {
             <AdminField label="Cor Primária (HSL)" value={form.theme_primary || ""} onChange={(v) => setForm({ ...form, theme_primary: v })} placeholder="33 30% 70%" />
             <AdminField label="Cor Accent (HSL)" value={form.theme_accent || ""} onChange={(v) => setForm({ ...form, theme_accent: v })} placeholder="33 40% 55%" />
           </div>
+        </div>
+
+        {/* Logo */}
+        <div className="border border-border bg-card/50 p-4 sm:p-5 rounded-sm space-y-4">
+          <h3 className="font-body text-[10px] letter-wide uppercase text-primary">Logo da Loja</h3>
+          {form.logo_url && (
+            <div className="relative w-24 h-24 bg-secondary rounded-full overflow-hidden">
+              <img src={form.logo_url} alt="Logo" className="w-full h-full object-contain" />
+              <button
+                onClick={() => setForm({ ...form, logo_url: "" })}
+                className="absolute top-0 right-0 bg-destructive text-destructive-foreground p-1 rounded-full"
+              >
+                <Trash2 className="h-3 w-3" />
+              </button>
+            </div>
+          )}
+          <input ref={logoFileRef} type="file" accept="image/*" className="hidden" onChange={(e) => e.target.files && handleLogoUpload(e.target.files)} />
+          <button
+            onClick={() => logoFileRef.current?.click()}
+            disabled={uploadingLogo}
+            className="font-body text-xs letter-wide uppercase border border-border text-muted-foreground px-4 py-2 hover:text-foreground hover:border-primary transition-all flex items-center gap-1.5 rounded-sm disabled:opacity-50"
+          >
+            <Upload className="h-3.5 w-3.5" /> {uploadingLogo ? "Enviando..." : "Upload Logo"}
+          </button>
+          <AdminField label="Ou URL da logo" value={form.logo_url || ""} onChange={(v) => setForm({ ...form, logo_url: v })} placeholder="https://..." />
         </div>
 
         {/* Background Image */}

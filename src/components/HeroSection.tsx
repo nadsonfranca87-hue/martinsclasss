@@ -1,5 +1,5 @@
 import heroImage from "@/assets/hero-fashion.jpg";
-import logo from "@/assets/logo.jpeg";
+import defaultLogo from "@/assets/logo.jpeg";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { getSiteData } from "@/lib/siteData";
 
@@ -11,6 +11,7 @@ const HeroSection = () => {
   const heroSubtitle = settings?.hero_subtitle || fallback.heroSubtitle;
   const heroDescription = settings?.hero_description || fallback.heroDescription;
   const bgImage = settings?.hero_bg_image || heroImage;
+  const logoSrc = settings?.logo_url || defaultLogo;
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -21,7 +22,7 @@ const HeroSection = () => {
 
       <div className="relative z-10 text-center px-4 sm:px-6 max-w-4xl mx-auto">
         <div className="flex justify-center mb-4 sm:mb-6 animate-fade-in" style={{ animationDelay: "0.1s" }}>
-          <img src={logo} alt="Martins Class Logo" className="h-20 w-20 sm:h-28 sm:w-28 object-contain rounded-full" />
+          <img src={logoSrc} alt="Martins Class Logo" className="h-20 w-20 sm:h-28 sm:w-28 object-contain rounded-full" />
         </div>
         <p className="font-body text-[10px] sm:text-xs letter-wider uppercase text-muted-foreground mb-4 sm:mb-6 animate-fade-in" style={{ animationDelay: "0.2s" }}>
           {heroSubtitle}
