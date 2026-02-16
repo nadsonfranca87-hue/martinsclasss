@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { ShoppingBag, Menu, X } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
@@ -6,6 +7,7 @@ import defaultLogo from "@/assets/logo.jpeg";
 
 const navItems = [
   { label: "Coleção", href: "#colecao" },
+  { label: "Categorias", href: "/categorias" },
   { label: "Sobre", href: "#sobre" },
   { label: "Contato", href: "#contato" },
 ];
@@ -15,7 +17,22 @@ const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { itemCount, setIsOpen } = useCart();
   const { data: settings } = useSiteSettings();
+  const navigate = useNavigate();
+  const location = useLocation();
   const logo = settings?.logo_url || defaultLogo;
+
+  const handleNavClick = (href: string) => {
+    setMobileOpen(false);
+    if (href.startsWith("#")) {
+      if (location.pathname !== "/") {
+        navigate("/" + href);
+      } else {
+        document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
+      }
+    } else {
+      navigate(href);
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -47,9 +64,9 @@ const Navbar = () => {
         <ul className="hidden md:flex items-center gap-10">
           {navItems.map((item) => (
             <li key={item.label}>
-              <a href={item.href} className="font-body text-xs letter-wide uppercase text-muted-foreground hover:text-foreground transition-colors duration-300">
+              <button onClick={() => handleNavClick(item.href)} className="font-body text-xs letter-wide uppercase text-muted-foreground hover:text-foreground transition-colors duration-300">
                 {item.label}
-              </a>
+              </button>
             </li>
           ))}
         </ul>
@@ -79,13 +96,12 @@ const Navbar = () => {
         <ul className="flex flex-col items-center justify-center h-full gap-10">
           {navItems.map((item) => (
             <li key={item.label}>
-              <a
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
+              <button
+                onClick={() => handleNavClick(item.href)}
                 className="font-display text-2xl text-foreground hover:text-primary transition-colors"
               >
                 {item.label}
-              </a>
+              </button>
             </li>
           ))}
         </ul>
