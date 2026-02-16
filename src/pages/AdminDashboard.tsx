@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { Package, Settings, Tag, ShoppingCart, LogOut, ExternalLink, LayoutDashboard, Truck, Star } from "lucide-react";
+import { Package, Settings, Tag, ShoppingCart, LogOut, ExternalLink, LayoutDashboard, Truck, Star, AlertCircle } from "lucide-react";
 import ProductsTab from "@/components/admin/ProductsTab";
 import CategoriesTab from "@/components/admin/CategoriesTab";
 import OrdersTab from "@/components/admin/OrdersTab";
@@ -15,10 +15,10 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState<string>("products");
 
   useEffect(() => {
-    if (!loading && (!user || !isAdmin)) {
+    if (!loading && !user) {
       navigate("/painel");
     }
-  }, [user, isAdmin, loading, navigate]);
+  }, [user, loading, navigate]);
 
   const handleLogout = async () => {
     await signOut();
@@ -33,6 +33,34 @@ const AdminDashboard = () => {
       </div>
     </div>
   );
+
+  if (user && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center px-6">
+        <div className="text-center max-w-md space-y-6">
+          <AlertCircle className="h-16 w-16 text-destructive mx-auto" />
+          <h1 className="font-display text-3xl text-foreground">Acesso Negado</h1>
+          <p className="font-body text-muted-foreground">
+            Você está logado, mas não possui permissões de administrador para acessar este painel.
+          </p>
+          <div className="flex flex-col gap-3">
+            <button
+              onClick={() => navigate("/")}
+              className="font-body text-xs letter-wide uppercase bg-primary text-primary-foreground px-8 py-3 hover:bg-primary/90 transition-colors"
+            >
+              Voltar para a Loja
+            </button>
+            <button
+              onClick={handleLogout}
+              className="font-body text-xs letter-wide uppercase border border-border text-muted-foreground px-8 py-3 hover:text-foreground transition-colors"
+            >
+              Sair da Conta
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const tabs = [
     { id: "products", label: "Produtos", icon: Package },
