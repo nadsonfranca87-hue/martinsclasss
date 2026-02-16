@@ -36,11 +36,13 @@ const CollectionSection = () => {
   const handleAddToCart = (e: React.MouseEvent, product: any) => {
     e.stopPropagation();
     if (hasDbProducts) {
+      const discount = product.discount_percent || 0;
+      const finalPrice = discount > 0 ? product.price * (1 - discount / 100) : product.price;
       addItem({
         id: product.id,
         productKey: product.key,
         title: product.title,
-        price: product.price,
+        price: finalPrice,
         image: product.images?.[0]?.image_url || "",
       });
     } else {
@@ -121,11 +123,14 @@ const CollectionSection = () => {
         ) : (
           <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-6">
             {filtered.map((product: any) => {
-              const image = hasDbProducts
+               const image = hasDbProducts
                 ? product.images?.[0]?.image_url
                 : product.image;
-              const categoryName = hasDbProducts ? product.category?.name : product.category;
-              const priceDisplay = hasDbProducts ? `R$ ${Number(product.price).toFixed(2)}` : product.price;
+               const categoryName = hasDbProducts ? product.category?.name : product.category;
+               const originalPrice = hasDbProducts ? Number(product.price) : parseFloat(product.price.replace(/[^\d,]/g, "").replace(",", "."));
+               const discount = hasDbProducts ? (product.discount_percent || 0) : 0;
+               const finalPrice = discount > 0 ? originalPrice * (1 - discount / 100) : originalPrice;
+               const priceDisplay = hasDbProducts ? `R$ ${finalPrice.toFixed(2)}` : product.price;
 
               return (
                 <div key={product.id} className="group cursor-pointer" onClick={() => handleProductClick(product)}>
@@ -164,7 +169,15 @@ const CollectionSection = () => {
                     <h3 className="font-display text-sm sm:text-lg text-foreground group-hover:text-primary transition-colors duration-300 line-clamp-2">
                       {product.title}
                     </h3>
-                    <p className="font-body text-xs sm:text-sm text-primary">{priceDisplay}</p>
+                    {discount > 0 ? (
+                      <div className="flex items-center gap-2">
+                        <span className="font-body text-[10px] sm:text-xs text-muted-foreground line-through">R$ {originalPrice.toFixed(2)}</span>
+                        <span className="font-body text-xs sm:text-sm text-primary">{priceDisplay}</span>
+                        <span className="font-body text-[8px] sm:text-[10px] bg-destructive/20 text-destructive px-1.5 py-0.5">-{discount}%</span>
+                      </div>
+                    ) : (
+                      <p className="font-body text-xs sm:text-sm text-primary">{priceDisplay}</p>
+                    )}
                   </div>
                 </div>
               );

@@ -47,7 +47,8 @@ export default function ProductsTab() {
   const handleSave = async (product: any) => {
     const { error } = await supabase.from("products").update({
       title: product.title, key: product.key, description: product.description,
-      price: product.price, category_id: product.category_id, style_id: product.style_id,
+      price: product.price, discount_percent: product.discount_percent || 0,
+      category_id: product.category_id, style_id: product.style_id,
       brand_id: product.brand_id, status: product.status, is_new: product.is_new,
       is_promo: product.is_promo, sort_order: product.sort_order, video_url: product.video_url,
     }).eq("id", product.id);
@@ -135,6 +136,17 @@ export default function ProductsTab() {
             <AdminField label="Nome" value={editing.title} onChange={(v) => setEditing({ ...editing, title: v })} />
             <AdminField label="KEY (código único)" value={editing.key} onChange={(v) => setEditing({ ...editing, key: v })} />
             <AdminField label="Preço" value={String(editing.price)} onChange={(v) => setEditing({ ...editing, price: parseFloat(v) || 0 })} type="number" />
+            <AdminField label="Desconto (%)" value={String(editing.discount_percent || 0)} onChange={(v) => setEditing({ ...editing, discount_percent: parseInt(v) || 0 })} type="number" />
+            {editing.discount_percent > 0 && (
+              <div className="space-y-1.5">
+                <label className="font-body text-[10px] letter-wide uppercase text-muted-foreground block">Preço Final</label>
+                <div className="flex items-center gap-2 py-2.5 px-3 bg-primary/10 border border-primary/20 rounded-sm">
+                  <span className="font-body text-sm text-muted-foreground line-through">R$ {Number(editing.price).toFixed(2)}</span>
+                  <span className="font-body text-sm text-primary font-medium">R$ {(editing.price * (1 - editing.discount_percent / 100)).toFixed(2)}</span>
+                  <span className="font-body text-[10px] bg-destructive/20 text-destructive px-1.5 py-0.5 rounded-sm">-{editing.discount_percent}%</span>
+                </div>
+              </div>
+            )}
             <AdminField label="Ordem" value={String(editing.sort_order || 0)} onChange={(v) => setEditing({ ...editing, sort_order: parseInt(v) || 0 })} type="number" />
             <div className="space-y-1.5">
               <label className="font-body text-[10px] letter-wide uppercase text-muted-foreground block">Categoria</label>
@@ -220,7 +232,15 @@ export default function ProductsTab() {
                 <p className="font-body text-sm text-foreground truncate">{product.title}</p>
                 <p className="font-body text-[10px] letter-wide text-muted-foreground mt-0.5">KEY: {product.key}</p>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="font-body text-xs text-primary font-medium">R$ {Number(product.price).toFixed(2)}</span>
+                  {product.discount_percent ? (
+                    <>
+                      <span className="font-body text-xs text-muted-foreground line-through">R$ {Number(product.price).toFixed(2)}</span>
+                      <span className="font-body text-xs text-primary font-medium">R$ {(Number(product.price) * (1 - product.discount_percent / 100)).toFixed(2)}</span>
+                      <span className="font-body text-[9px] bg-destructive/20 text-destructive px-1.5 py-0.5 rounded-sm">-{product.discount_percent}%</span>
+                    </>
+                  ) : (
+                    <span className="font-body text-xs text-primary font-medium">R$ {Number(product.price).toFixed(2)}</span>
+                  )}
                   {product.category?.name && <span className="font-body text-[10px] text-muted-foreground">• {product.category.name}</span>}
                 </div>
               </div>

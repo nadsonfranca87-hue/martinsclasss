@@ -127,6 +127,7 @@ export type Database = {
           category_id: string | null
           created_at: string | null
           description: string | null
+          discount_percent: number | null
           id: string
           is_new: boolean | null
           is_promo: boolean | null
@@ -144,6 +145,7 @@ export type Database = {
           category_id?: string | null
           created_at?: string | null
           description?: string | null
+          discount_percent?: number | null
           id?: string
           is_new?: boolean | null
           is_promo?: boolean | null
@@ -161,6 +163,7 @@ export type Database = {
           category_id?: string | null
           created_at?: string | null
           description?: string | null
+          discount_percent?: number | null
           id?: string
           is_new?: boolean | null
           is_promo?: boolean | null
@@ -265,6 +268,39 @@ export type Database = {
           created_at?: string | null
           id?: string
           name?: string
+          sort_order?: number | null
+        }
+        Relationships: []
+      }
+      testimonials: {
+        Row: {
+          created_at: string | null
+          customer_name: string
+          customer_photo: string | null
+          id: string
+          is_visible: boolean
+          message: string
+          rating: number
+          sort_order: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          customer_name: string
+          customer_photo?: string | null
+          id?: string
+          is_visible?: boolean
+          message: string
+          rating?: number
+          sort_order?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          customer_name?: string
+          customer_photo?: string | null
+          id?: string
+          is_visible?: boolean
+          message?: string
+          rating?: number
           sort_order?: number | null
         }
         Relationships: []

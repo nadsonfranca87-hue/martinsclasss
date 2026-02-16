@@ -7,6 +7,7 @@ export interface ProductWithDetails {
   title: string;
   description: string;
   price: number;
+  discount_percent: number;
   status: string;
   is_new: boolean;
   is_promo: boolean;

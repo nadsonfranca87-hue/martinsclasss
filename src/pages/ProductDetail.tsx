@@ -18,13 +18,16 @@ const ProductDetail = () => {
 
   const product = products?.find((p) => p.id === id);
 
+  const discount = product?.discount_percent || 0;
+  const finalPrice = product ? (discount > 0 ? product.price * (1 - discount / 100) : product.price) : 0;
+
   const handleAddToCart = () => {
     if (!product) return;
     addItem({
       id: product.id,
       productKey: product.key,
       title: product.title,
-      price: product.price,
+      price: finalPrice,
       image: product.images?.[0]?.image_url || "",
     });
   };
@@ -158,7 +161,15 @@ const ProductDetail = () => {
                   <p className="font-body text-[10px] letter-wide uppercase text-muted-foreground">{product.category.name}</p>
                 )}
                 <h1 className="font-display text-2xl sm:text-3xl lg:text-4xl text-foreground">{product.title}</h1>
-                <p className="font-display text-xl sm:text-2xl text-primary">R$ {Number(product.price).toFixed(2)}</p>
+                {discount > 0 ? (
+                  <div className="flex items-center gap-3">
+                    <span className="font-body text-base sm:text-lg text-muted-foreground line-through">R$ {Number(product.price).toFixed(2)}</span>
+                    <span className="font-display text-xl sm:text-2xl text-primary">R$ {finalPrice.toFixed(2)}</span>
+                    <span className="font-body text-xs bg-destructive/20 text-destructive px-2 py-1">-{discount}%</span>
+                  </div>
+                ) : (
+                  <p className="font-display text-xl sm:text-2xl text-primary">R$ {Number(product.price).toFixed(2)}</p>
+                )}
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -193,7 +204,7 @@ const ProductDetail = () => {
 
                 {whatsappNumber && (
                   <a
-                    href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Olá! Tenho interesse no produto: ${product.title} (KEY: ${product.key}) - R$ ${Number(product.price).toFixed(2)}`)}`}
+                    href={`https://wa.me/${whatsappNumber}?text=${encodeURIComponent(`Olá! Tenho interesse no produto: ${product.title} (KEY: ${product.key}) - R$ ${finalPrice.toFixed(2)}`)}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="font-body text-xs letter-wide uppercase border border-border text-foreground px-8 py-4 hover:border-primary hover:text-primary transition-colors text-center"
