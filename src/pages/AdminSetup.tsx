@@ -33,13 +33,13 @@ const AdminSetup = () => {
     }
 
     if (data.user) {
-      // Assign admin role
-      const { error: roleError } = await supabase.functions.invoke("assign-admin-role", {
-        body: { userId: data.user.id },
+      // Assign admin role via database RPC function
+      const { error: roleError } = await supabase.rpc("assign_first_admin", {
+        target_user_id: data.user.id,
       });
 
       if (roleError) {
-        toast.error("Conta criada, mas erro ao definir como admin. Entre em contato com suporte.");
+        toast.error("Conta criada, mas erro ao definir como admin: " + roleError.message);
         setLoading(false);
         return;
       }
