@@ -31,9 +31,11 @@ export function useAuth() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (!mounted) return;
       const u = session?.user ?? null;
+      console.log("[v0] Auth state changed:", _event, "user:", u?.email);
       setUser(u);
       if (u) {
         const admin = await checkAdmin(u.id);
+        console.log("[v0] Admin check result:", admin);
         if (mounted) setIsAdmin(admin);
       } else {
         setIsAdmin(false);

@@ -20,9 +20,13 @@ const AdminLogin = () => {
     e.preventDefault();
     setError("");
     setLoading(true);
+    console.log("[v0] Attempting login with email:", email);
     const { error: err } = await signIn(email, password);
     if (err) {
+      console.log("[v0] Login error:", err.message);
       setError("Email ou senha incorretos");
+    } else {
+      console.log("[v0] Login successful, waiting for auth state change...");
     }
     setLoading(false);
   };
