@@ -6,28 +6,28 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [loginLoading, setLoginLoading] = useState(false);
   const navigate = useNavigate();
   const { user, isAdmin, loading: authLoading, signIn } = useAuth();
 
+  // Redirect when user is authenticated and is admin
   useEffect(() => {
     if (!authLoading && user && isAdmin) {
-      navigate("/painel/dashboard");
+      navigate("/painel/dashboard", { replace: true });
     }
   }, [user, isAdmin, authLoading, navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
+    setLoginLoading(true);
+
     const { error: err } = await signIn(email, password);
     if (err) {
       setError("Email ou senha incorretos. Se é o primeiro acesso, crie sua conta admin primeiro.");
-    } else {
-      // Wait a moment for auth state to update
-      await new Promise(resolve => setTimeout(resolve, 1000));
     }
-    setLoading(false);
+    // Redirect is handled by the useEffect above when auth state updates
+    setLoginLoading(false);
   };
 
   if (authLoading) {
@@ -36,6 +36,11 @@ const AdminLogin = () => {
         <p className="font-body text-muted-foreground">Carregando...</p>
       </div>
     );
+  }
+
+  // If already logged in and admin, show nothing while redirecting
+  if (user && isAdmin) {
+    return null;
   }
 
   return (
@@ -78,10 +83,10 @@ const AdminLogin = () => {
           )}
           <button
             type="submit"
-            disabled={loading}
+            disabled={loginLoading}
             className="font-body text-xs letter-wide uppercase bg-primary text-primary-foreground px-10 py-4 hover:bg-primary/90 transition-colors duration-300 w-full disabled:opacity-50"
           >
-            {loading ? "Entrando..." : "Entrar"}
+            {loginLoading ? "Entrando..." : "Entrar"}
           </button>
         </form>
 
