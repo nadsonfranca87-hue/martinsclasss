@@ -30,17 +30,12 @@ export default function SettingsTab() {
 
   const handleSave = async () => {
     try {
-      const entries = Object.entries(form).filter(([, value]) => value !== undefined && value !== null);
-      if (entries.length === 0) {
-        toast.info("Nenhuma configuração para salvar.");
-        return;
-      }
-      for (const [key, value] of entries) {
-        const { error } = await supabase.from("site_settings").upsert({ key, value: value || "" });
+      for (const [key, value] of Object.entries(form)) {
+        const { error } = await supabase.from("site_settings").upsert({ key, value });
         if (error) throw error;
       }
       await queryClient.invalidateQueries({ queryKey: ["site-settings"] });
-      toast.success("✅ Todas as configurações foram salvas com sucesso!");
+      toast.success("Configurações salvas!");
     } catch (err: any) {
       console.error("Erro ao salvar:", err);
       toast.error("Erro ao salvar: " + (err.message || "verifique se você está logado como admin"));
