@@ -17,6 +17,14 @@ const AdminLogin = () => {
     }
   }, [user, isAdmin, authLoading, navigate]);
 
+  // Show error if logged in but NOT admin (after auth finishes loading)
+  useEffect(() => {
+    if (!authLoading && user && !isAdmin && loginLoading) {
+      setError("Esta conta não possui permissão de administrador. Use a conta admin correta.");
+      setLoginLoading(false);
+    }
+  }, [authLoading, user, isAdmin, loginLoading]);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -25,9 +33,9 @@ const AdminLogin = () => {
     const { error: err } = await signIn(email, password);
     if (err) {
       setError("Email ou senha incorretos. Se é o primeiro acesso, crie sua conta admin primeiro.");
+      setLoginLoading(false);
     }
-    // Redirect is handled by the useEffect above when auth state updates
-    setLoginLoading(false);
+    // If signIn succeeded, wait for useEffect to handle redirect or show not-admin error
   };
 
   if (authLoading) {
