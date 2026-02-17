@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -7,6 +7,7 @@ const AdminLogin = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loginLoading, setLoginLoading] = useState(false);
+  const hasAttemptedLogin = useRef(false);
   const navigate = useNavigate();
   const { user, isAdmin, loading: authLoading, signIn } = useAuth();
 
@@ -17,23 +18,26 @@ const AdminLogin = () => {
     }
   }, [user, isAdmin, authLoading, navigate]);
 
-  // Show error if logged in but NOT admin (after auth finishes loading)
+  // Show error if logged in but NOT admin (after auth finishes loading and login was attempted)
   useEffect(() => {
-    if (!authLoading && user && !isAdmin && loginLoading) {
+    if (!authLoading && user && !isAdmin && hasAttemptedLogin.current) {
       setError("Esta conta não possui permissão de administrador. Use a conta admin correta.");
       setLoginLoading(false);
+      hasAttemptedLogin.current = false;
     }
-  }, [authLoading, user, isAdmin, loginLoading]);
+  }, [authLoading, user, isAdmin]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoginLoading(true);
+    hasAttemptedLogin.current = true;
 
     const { error: err } = await signIn(email, password);
     if (err) {
       setError("Email ou senha incorretos. Se é o primeiro acesso, crie sua conta admin primeiro.");
       setLoginLoading(false);
+      hasAttemptedLogin.current = false;
     }
     // If signIn succeeded, wait for useEffect to handle redirect or show not-admin error
   };
