@@ -11,8 +11,6 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminSetup from "./pages/AdminSetup";
 import ProductDetail from "./pages/ProductDetail";
 import Categories from "./pages/Categories";
-import PaymentSuccess from "./pages/PaymentSuccess";
-import PaymentCanceled from "./pages/PaymentCanceled";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,8 +30,6 @@ const App = () => (
             <Route path="/painel" element={<AdminLogin />} />
             <Route path="/painel/setup" element={<AdminSetup />} />
             <Route path="/painel/dashboard" element={<AdminDashboard />} />
-            <Route path="/pagamento-sucesso" element={<PaymentSuccess />} />
-            <Route path="/pagamento-cancelado" element={<PaymentCanceled />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

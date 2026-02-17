@@ -1,91 +1,70 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
+
+async function checkAdmin(userId: string) {
+  try {
+    const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+    return data?.some((r: any) => r.role === "admin") ?? false;
+  } catch {
+    return false;
+  }
+}
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const checkAdminRole = useCallback(async (userId: string): Promise<boolean> => {
-    try {
-      const { data, error } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userId)
-        .eq("role", "admin")
-        .maybeSingle();
-
-      if (error) {
-        console.error("Erro ao verificar admin:", error);
-        return false;
-      }
-      return !!data;
-    } catch (err) {
-      console.error("Erro inesperado:", err);
-      return false;
-    }
-  }, []);
-
   useEffect(() => {
     let mounted = true;
 
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        if (!mounted) return;
-
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-
-        if (currentUser) {
-          // Use setTimeout to avoid Supabase deadlock inside callback
-          setTimeout(async () => {
-            if (!mounted) return;
-            setLoading(true);
-            const admin = await checkAdminRole(currentUser.id);
-            if (mounted) {
-              setIsAdmin(admin);
-              setLoading(false);
-            }
-          }, 0);
-        } else {
-          setIsAdmin(false);
-          setLoading(false);
-        }
+    // Safety timeout - never stay loading more than 5s
+    const timeout = setTimeout(() => {
+      if (mounted && loading) {
+        console.warn("Auth loading timeout - forcing complete");
+        setLoading(false);
       }
-    );
+    }, 5000);
 
-    // Initial session check
-    const initializeAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!mounted) return;
-
-        const currentUser = session?.user ?? null;
-        setUser(currentUser);
-
-        if (currentUser) {
-          const admin = await checkAdminRole(currentUser.id);
-          if (mounted) setIsAdmin(admin);
-        }
-      } catch (err) {
-        console.error("Erro na inicialização:", err);
-      } finally {
-        if (mounted) setLoading(false);
+    // 1. Set up listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (!mounted) return;
+      const u = session?.user ?? null;
+      setUser(u);
+      if (u) {
+        const admin = await checkAdmin(u.id);
+        if (mounted) setIsAdmin(admin);
+      } else {
+        setIsAdmin(false);
       }
-    };
+      if (mounted) setLoading(false);
+    });
 
-    initializeAuth();
+    // 2. Then get initial session
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!mounted) return;
+      const u = session?.user ?? null;
+      setUser(u);
+      if (u) {
+        const admin = await checkAdmin(u.id);
+        if (mounted) setIsAdmin(admin);
+      }
+      if (mounted) setLoading(false);
+    }).catch(() => {
+      if (mounted) setLoading(false);
+    });
 
     return () => {
       mounted = false;
+      clearTimeout(timeout);
       subscription.unsubscribe();
     };
-  }, [checkAdminRole]);
+  }, []);
 
   const signIn = async (email: string, password: string) => {
-    return await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    return { error };
   };
 
   const signOut = async () => {

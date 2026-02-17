@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useCart } from "@/hooks/useCart";
-import { X, Minus, Plus, ShoppingBag, Trash2, Truck, Loader2, CreditCard } from "lucide-react";
+import { X, Minus, Plus, ShoppingBag, Trash2, Truck, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
 import { useShippingCalculator } from "@/hooks/useShipping";
@@ -11,9 +11,8 @@ const CartDrawer = () => {
   const { data: settings } = useSiteSettings();
   const shipping = useShippingCalculator();
   const [showCheckout, setShowCheckout] = useState(false);
-  const [form, setForm] = useState({ name: "", address: "", whatsapp: "", email: "" });
+  const [form, setForm] = useState({ name: "", address: "", whatsapp: "" });
   const [sending, setSending] = useState(false);
-  const [payingOnline, setPayingOnline] = useState(false);
 
   const shippingCost = shipping.result?.price ?? 0;
   const grandTotal = total + shippingCost;
@@ -70,68 +69,9 @@ const CartDrawer = () => {
     toast.success("Seu pedido foi enviado com sucesso!");
     clearCart();
     setShowCheckout(false);
-    setForm({ name: "", address: "", whatsapp: "", email: "" });
+    setForm({ name: "", address: "", whatsapp: "" });
     setIsOpen(false);
     setSending(false);
-  };
-
-  const handleOnlinePayment = async () => {
-    if (!form.name.trim() || !form.address.trim() || !form.whatsapp.trim()) {
-      toast.error("Preencha nome, endereço e WhatsApp");
-      return;
-    }
-    setPayingOnline(true);
-
-    try {
-      // Save order to DB
-      const orderItems = items.map((i) => ({
-        key: i.productKey,
-        title: i.title,
-        price: i.price,
-        quantity: i.quantity,
-      }));
-
-      await supabase.from("orders").insert({
-        customer_name: form.name,
-        customer_address: form.address,
-        customer_whatsapp: form.whatsapp,
-        items: orderItems,
-        total: grandTotal,
-      });
-
-      // Call Stripe checkout
-      const { data, error } = await supabase.functions.invoke("create-checkout", {
-        body: {
-          items: items.map((i) => ({
-            title: i.title,
-            price: i.price,
-            quantity: i.quantity,
-            image: i.image,
-          })),
-          customerName: form.name,
-          customerEmail: form.email || undefined,
-          customerWhatsapp: form.whatsapp,
-          customerAddress: form.address,
-          shippingCost,
-          cep: shipping.cep,
-        },
-      });
-
-      if (error) throw error;
-      if (data?.url) {
-        clearCart();
-        window.open(data.url, "_blank");
-        setShowCheckout(false);
-        setIsOpen(false);
-      } else {
-        throw new Error("URL de pagamento não recebida");
-      }
-    } catch (err: any) {
-      console.error("Payment error:", err);
-      toast.error("Erro ao iniciar pagamento: " + (err.message || "tente novamente"));
-    } finally {
-      setPayingOnline(false);
-    }
   };
 
   return (
@@ -250,13 +190,6 @@ const CartDrawer = () => {
                   required
                 />
                 <input
-                  type="email"
-                  placeholder="Email (opcional, para recibo)"
-                  value={form.email}
-                  onChange={(e) => setForm({ ...form, email: e.target.value })}
-                  className="w-full bg-secondary border border-border py-2 px-3 font-body text-sm text-foreground focus:outline-none focus:border-primary"
-                />
-                <input
                   type="text"
                   placeholder="Endereço completo *"
                   value={form.address}
@@ -283,20 +216,11 @@ const CartDrawer = () => {
                   <button
                     type="submit"
                     disabled={sending}
-                    className="flex-1 font-body text-xs letter-wide uppercase bg-secondary border border-border text-foreground py-3 hover:border-primary transition-colors disabled:opacity-50"
+                    className="flex-1 font-body text-xs letter-wide uppercase bg-primary text-primary-foreground py-3 hover:bg-primary/90 transition-colors disabled:opacity-50"
                   >
-                    {sending ? "Enviando..." : "Via WhatsApp"}
+                    {sending ? "Enviando..." : "Enviar Pedido"}
                   </button>
                 </div>
-                <button
-                  type="button"
-                  onClick={handleOnlinePayment}
-                  disabled={payingOnline}
-                  className="w-full font-body text-xs letter-wide uppercase bg-primary text-primary-foreground py-3 hover:bg-primary/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-                >
-                  <CreditCard className="h-4 w-4" />
-                  {payingOnline ? "Processando..." : "Pagar com Cartão / PIX"}
-                </button>
               </form>
             )}
           </div>

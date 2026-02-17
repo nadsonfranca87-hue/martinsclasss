@@ -6,36 +6,25 @@ const AdminLogin = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const [loginLoading, setLoginLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const { user, isAdmin, loading: authLoading, signIn } = useAuth();
 
-  // Redirect when user is authenticated and is admin
   useEffect(() => {
     if (!authLoading && user && isAdmin) {
-      navigate("/painel/dashboard", { replace: true });
+      navigate("/painel/dashboard");
     }
   }, [user, isAdmin, authLoading, navigate]);
-
-  // Show error if logged in but NOT admin (after auth finishes loading)
-  useEffect(() => {
-    if (!authLoading && user && !isAdmin && loginLoading) {
-      setError("Esta conta não possui permissão de administrador. Use a conta admin correta.");
-      setLoginLoading(false);
-    }
-  }, [authLoading, user, isAdmin, loginLoading]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setLoginLoading(true);
-
+    setLoading(true);
     const { error: err } = await signIn(email, password);
     if (err) {
-      setError("Email ou senha incorretos. Se é o primeiro acesso, crie sua conta admin primeiro.");
-      setLoginLoading(false);
+      setError("Email ou senha incorretos");
     }
-    // If signIn succeeded, wait for useEffect to handle redirect or show not-admin error
+    setLoading(false);
   };
 
   if (authLoading) {
@@ -44,11 +33,6 @@ const AdminLogin = () => {
         <p className="font-body text-muted-foreground">Carregando...</p>
       </div>
     );
-  }
-
-  // If already logged in and admin, show nothing while redirecting
-  if (user && isAdmin) {
-    return null;
   }
 
   return (
@@ -78,29 +62,15 @@ const AdminLogin = () => {
               required
             />
           </div>
-          {error && (
-            <div className="space-y-3">
-              <p className="font-body text-sm text-destructive">{error}</p>
-              <a
-                href="/painel/setup"
-                className="block text-center font-body text-xs text-primary hover:text-primary/80 underline"
-              >
-                Criar primeira conta admin
-              </a>
-            </div>
-          )}
+          {error && <p className="font-body text-sm text-destructive">{error}</p>}
           <button
             type="submit"
-            disabled={loginLoading}
+            disabled={loading}
             className="font-body text-xs letter-wide uppercase bg-primary text-primary-foreground px-10 py-4 hover:bg-primary/90 transition-colors duration-300 w-full disabled:opacity-50"
           >
-            {loginLoading ? "Entrando..." : "Entrar"}
+            {loading ? "Entrando..." : "Entrar"}
           </button>
         </form>
-
-        <p className="font-body text-xs text-muted-foreground text-center mt-6">
-          Primeiro acesso? <a href="/painel/setup" className="text-primary hover:text-primary/80 underline">Criar conta admin</a>
-        </p>
       </div>
     </div>
   );
