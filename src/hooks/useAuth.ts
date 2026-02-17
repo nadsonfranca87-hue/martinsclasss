@@ -1,37 +1,36 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { User } from "@supabase/supabase-js";
-
-async function checkAdmin(userId: string): Promise<boolean> {
-  try {
-    const { data, error } = await supabase
-      .from("user_roles")
-      .select("role")
-      .eq("user_id", userId)
-      .eq("role", "admin")
-      .maybeSingle();
-
-    if (error) {
-      console.error("Erro ao verificar admin:", error);
-      return false;
-    }
-
-    return !!data;
-  } catch (err) {
-    console.error("Erro inesperado na verificação de admin:", err);
-    return false;
-  }
-}
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const checkAdminRole = useCallback(async (userId: string): Promise<boolean> => {
+    try {
+      const { data, error } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId)
+        .eq("role", "admin")
+        .maybeSingle();
+
+      if (error) {
+        console.error("Erro ao verificar admin:", error);
+        return false;
+      }
+      return !!data;
+    } catch (err) {
+      console.error("Erro inesperado:", err);
+      return false;
+    }
+  }, []);
+
   useEffect(() => {
     let mounted = true;
 
-    // Set up listener FIRST (before getSession) to catch all auth changes
+    // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         if (!mounted) return;
@@ -40,19 +39,24 @@ export function useAuth() {
         setUser(currentUser);
 
         if (currentUser) {
-          // Defer Supabase call to avoid deadlock inside callback
+          // Use setTimeout to avoid Supabase deadlock inside callback
           setTimeout(async () => {
             if (!mounted) return;
-            const adminStatus = await checkAdmin(currentUser.id);
-            if (mounted) setIsAdmin(adminStatus);
+            setLoading(true);
+            const admin = await checkAdminRole(currentUser.id);
+            if (mounted) {
+              setIsAdmin(admin);
+              setLoading(false);
+            }
           }, 0);
         } else {
           setIsAdmin(false);
+          setLoading(false);
         }
       }
     );
 
-    // Initial session check - controls loading state
+    // Initial session check
     const initializeAuth = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
@@ -62,11 +66,11 @@ export function useAuth() {
         setUser(currentUser);
 
         if (currentUser) {
-          const adminStatus = await checkAdmin(currentUser.id);
-          if (mounted) setIsAdmin(adminStatus);
+          const admin = await checkAdminRole(currentUser.id);
+          if (mounted) setIsAdmin(admin);
         }
       } catch (err) {
-        console.error("Erro na inicialização da auth:", err);
+        console.error("Erro na inicialização:", err);
       } finally {
         if (mounted) setLoading(false);
       }
@@ -78,7 +82,7 @@ export function useAuth() {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, []);
+  }, [checkAdminRole]);
 
   const signIn = async (email: string, password: string) => {
     return await supabase.auth.signInWithPassword({ email, password });
