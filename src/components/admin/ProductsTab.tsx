@@ -262,3 +262,108 @@ export default function ProductsTab() {
     </div>
   );
 }
+
+function VariationsEditor({ productId }: { productId: string }) {
+  const queryClient = useQueryClient();
+  const { data: colors, isLoading: colorsLoading } = useProductColors(productId);
+  const { data: sizes, isLoading: sizesLoading } = useProductSizes(productId);
+  const [newColor, setNewColor] = useState({ name: "", hex_code: "#000000" });
+  const [newSize, setNewSize] = useState("");
+
+  const handleAddColor = async () => {
+    if (!newColor.name.trim()) { toast.error("Informe o nome da cor"); return; }
+    const { error } = await supabase.from("product_colors").insert({
+      product_id: productId, name: newColor.name, hex_code: newColor.hex_code,
+    });
+    if (error) { toast.error("Erro ao adicionar cor"); return; }
+    queryClient.invalidateQueries({ queryKey: ["product-colors", productId] });
+    setNewColor({ name: "", hex_code: "#000000" });
+    toast.success("Cor adicionada!");
+  };
+
+  const handleDeleteColor = async (id: string) => {
+    await supabase.from("product_colors").delete().eq("id", id);
+    queryClient.invalidateQueries({ queryKey: ["product-colors", productId] });
+    toast.success("Cor removida!");
+  };
+
+  const handleAddSize = async () => {
+    if (!newSize.trim()) { toast.error("Informe o tamanho"); return; }
+    const { error } = await supabase.from("product_sizes").insert({
+      product_id: productId, name: newSize,
+    });
+    if (error) { toast.error("Erro ao adicionar tamanho"); return; }
+    queryClient.invalidateQueries({ queryKey: ["product-sizes", productId] });
+    setNewSize("");
+    toast.success("Tamanho adicionado!");
+  };
+
+  const handleDeleteSize = async (id: string) => {
+    await supabase.from("product_sizes").delete().eq("id", id);
+    queryClient.invalidateQueries({ queryKey: ["product-sizes", productId] });
+    toast.success("Tamanho removido!");
+  };
+
+  return (
+    <div className="space-y-4 border-t border-border pt-4">
+      <h4 className="font-body text-[10px] letter-wide uppercase text-muted-foreground flex items-center gap-1.5">
+        <Palette className="h-3.5 w-3.5" /> Variações do Produto
+      </h4>
+
+      {/* Colors */}
+      <div className="space-y-2">
+        <label className="font-body text-[10px] letter-wide uppercase text-muted-foreground block">Cores</label>
+        <div className="flex gap-2 flex-wrap">
+          {colors?.map((c) => (
+            <div key={c.id} className="flex items-center gap-1.5 border border-border px-2 py-1 rounded-sm group">
+              <span className="w-4 h-4 rounded-full border border-border" style={{ backgroundColor: c.hex_code }} />
+              <span className="font-body text-xs text-foreground">{c.name}</span>
+              <button onClick={() => handleDeleteColor(c.id)} className="text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-2 items-center">
+          <input type="color" value={newColor.hex_code} onChange={(e) => setNewColor({ ...newColor, hex_code: e.target.value })} className="w-8 h-8 cursor-pointer border-0 p-0" />
+          <input
+            value={newColor.name}
+            onChange={(e) => setNewColor({ ...newColor, name: e.target.value })}
+            placeholder="Nome da cor"
+            className="flex-1 bg-secondary/50 border border-border py-2 px-3 font-body text-sm text-foreground rounded-sm focus:outline-none focus:border-primary"
+          />
+          <button onClick={handleAddColor} className="font-body text-xs letter-wide uppercase bg-secondary border border-border text-foreground px-3 py-2 hover:border-primary transition-colors rounded-sm flex items-center gap-1">
+            <Plus className="h-3 w-3" /> Add
+          </button>
+        </div>
+      </div>
+
+      {/* Sizes */}
+      <div className="space-y-2">
+        <label className="font-body text-[10px] letter-wide uppercase text-muted-foreground block">Tamanhos</label>
+        <div className="flex gap-2 flex-wrap">
+          {sizes?.map((s) => (
+            <div key={s.id} className="flex items-center gap-1.5 border border-border px-2 py-1 rounded-sm group">
+              <span className="font-body text-xs text-foreground">{s.name}</span>
+              <button onClick={() => handleDeleteSize(s.id)} className="text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
+                <X className="h-3 w-3" />
+              </button>
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-2 items-center">
+          <input
+            value={newSize}
+            onChange={(e) => setNewSize(e.target.value)}
+            placeholder="Ex: P, M, G, GG"
+            className="flex-1 bg-secondary/50 border border-border py-2 px-3 font-body text-sm text-foreground rounded-sm focus:outline-none focus:border-primary"
+            onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleAddSize())}
+          />
+          <button onClick={handleAddSize} className="font-body text-xs letter-wide uppercase bg-secondary border border-border text-foreground px-3 py-2 hover:border-primary transition-colors rounded-sm flex items-center gap-1">
+            <Plus className="h-3 w-3" /> Add
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
