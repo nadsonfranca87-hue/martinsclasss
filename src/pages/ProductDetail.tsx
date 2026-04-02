@@ -3,10 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useProducts } from "@/hooks/useProducts";
 import { useCart } from "@/hooks/useCart";
 import { useSiteSettings } from "@/hooks/useSiteSettings";
+import { useProductColors, useProductSizes } from "@/hooks/useProductVariations";
 import { ArrowLeft, ShoppingBag, ChevronLeft, ChevronRight } from "lucide-react";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import CartDrawer from "@/components/CartDrawer";
+import { toast } from "sonner";
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -14,21 +16,38 @@ const ProductDetail = () => {
   const { data: products, isLoading } = useProducts();
   const { addItem } = useCart();
   const { data: settings } = useSiteSettings();
+  const { data: colors } = useProductColors(id);
+  const { data: sizes } = useProductSizes(id);
   const [activeImage, setActiveImage] = useState(0);
+  const [selectedColor, setSelectedColor] = useState<string>("");
+  const [selectedSize, setSelectedSize] = useState<string>("");
 
   const product = products?.find((p) => p.id === id);
 
   const discount = product?.discount_percent || 0;
   const finalPrice = product ? (discount > 0 ? product.price * (1 - discount / 100) : product.price) : 0;
 
+  const hasColors = colors && colors.length > 0;
+  const hasSizes = sizes && sizes.length > 0;
+
   const handleAddToCart = () => {
     if (!product) return;
+    if (hasColors && !selectedColor) {
+      toast.error("Selecione uma cor");
+      return;
+    }
+    if (hasSizes && !selectedSize) {
+      toast.error("Selecione um tamanho");
+      return;
+    }
     addItem({
       id: product.id,
       productKey: product.key,
       title: product.title,
       price: finalPrice,
       image: product.images?.[0]?.image_url || "",
+      color: selectedColor || undefined,
+      size: selectedSize || undefined,
     });
   };
 
@@ -85,7 +104,6 @@ const ProductDetail = () => {
       <CartDrawer />
 
       <main className="pt-20 sm:pt-24">
-        {/* Back button */}
         <div className="container mx-auto px-4 sm:px-6 mb-6">
           <button onClick={() => navigate(-1)} className="font-body text-xs letter-wide uppercase text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
             <ArrowLeft className="h-3.5 w-3.5" /> Voltar
@@ -96,20 +114,14 @@ const ProductDetail = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-16">
             {/* Image Gallery */}
             <div className="space-y-3">
-              {/* Main Image */}
               <div className="relative aspect-[3/4] bg-secondary overflow-hidden">
                 {images.length > 0 ? (
-                  <img
-                    src={images[activeImage]?.image_url}
-                    alt={product.title}
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={images[activeImage]?.image_url} alt={product.title} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                     <ShoppingBag className="h-16 w-16 opacity-20" />
                   </div>
                 )}
-
                 {images.length > 1 && (
                   <>
                     <button onClick={prevImage} className="absolute left-2 top-1/2 -translate-y-1/2 bg-background/60 backdrop-blur-sm text-foreground p-2 hover:bg-background/80 transition-colors">
@@ -120,7 +132,6 @@ const ProductDetail = () => {
                     </button>
                   </>
                 )}
-
                 {product.is_new && (
                   <span className="absolute top-3 left-3 bg-primary text-primary-foreground font-body text-[10px] letter-wide uppercase px-3 py-1">Novidade</span>
                 )}
@@ -129,24 +140,16 @@ const ProductDetail = () => {
                 )}
               </div>
 
-              {/* Thumbnails */}
               {images.length > 1 && (
                 <div className="flex gap-2 overflow-x-auto scrollbar-hide">
                   {images.map((img, i) => (
-                    <button
-                      key={img.id}
-                      onClick={() => setActiveImage(i)}
-                      className={`w-16 h-20 sm:w-20 sm:h-24 flex-shrink-0 overflow-hidden border-2 transition-colors ${
-                        activeImage === i ? "border-primary" : "border-transparent hover:border-primary/30"
-                      }`}
-                    >
+                    <button key={img.id} onClick={() => setActiveImage(i)} className={`w-16 h-20 sm:w-20 sm:h-24 flex-shrink-0 overflow-hidden border-2 transition-colors ${activeImage === i ? "border-primary" : "border-transparent hover:border-primary/30"}`}>
                       <img src={img.image_url} alt="" className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
               )}
 
-              {/* Video */}
               {product.video_url && (
                 <div className="aspect-video bg-secondary">
                   <video src={product.video_url} controls className="w-full h-full object-cover" />
@@ -174,18 +177,52 @@ const ProductDetail = () => {
 
               <div className="flex flex-wrap gap-2">
                 {product.style && (
-                  <span className="font-body text-[10px] letter-wide uppercase text-muted-foreground border border-border px-3 py-1">
-                    {product.style.name}
-                  </span>
+                  <span className="font-body text-[10px] letter-wide uppercase text-muted-foreground border border-border px-3 py-1">{product.style.name}</span>
                 )}
                 {product.brand && (
-                  <span className="font-body text-[10px] letter-wide uppercase text-muted-foreground border border-border px-3 py-1">
-                    {product.brand.name}
-                  </span>
+                  <span className="font-body text-[10px] letter-wide uppercase text-muted-foreground border border-border px-3 py-1">{product.brand.name}</span>
                 )}
               </div>
 
               <p className="font-body text-[10px] letter-wide text-muted-foreground/60">KEY: {product.key}</p>
+
+              {/* Color selection */}
+              {hasColors && (
+                <div className="space-y-2">
+                  <label className="font-body text-[10px] letter-wide uppercase text-muted-foreground block">
+                    Cor {selectedColor && <span className="text-foreground ml-1">— {selectedColor}</span>}
+                  </label>
+                  <div className="flex gap-2 flex-wrap">
+                    {colors.map((c) => (
+                      <button
+                        key={c.id}
+                        onClick={() => setSelectedColor(c.name)}
+                        title={c.name}
+                        className={`w-8 h-8 rounded-full border-2 transition-all ${selectedColor === c.name ? "border-primary scale-110" : "border-border hover:border-foreground/40"}`}
+                        style={{ backgroundColor: c.hex_code }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Size selection */}
+              {hasSizes && (
+                <div className="space-y-2">
+                  <label className="font-body text-[10px] letter-wide uppercase text-muted-foreground block">Tamanho</label>
+                  <div className="flex gap-2 flex-wrap">
+                    {sizes.map((s) => (
+                      <button
+                        key={s.id}
+                        onClick={() => setSelectedSize(s.name)}
+                        className={`font-body text-xs letter-wide uppercase px-4 py-2 border transition-colors ${selectedSize === s.name ? "border-primary text-primary bg-primary/10" : "border-border text-muted-foreground hover:border-foreground/40 hover:text-foreground"}`}
+                      >
+                        {s.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {product.description && (
                 <div className="border-t border-border pt-6">

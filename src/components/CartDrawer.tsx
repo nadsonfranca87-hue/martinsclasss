@@ -165,7 +165,7 @@ const CartDrawer = () => {
                       Calcular
                     </button>
                   </div>
-                  {shipping.error && <p className="font-body text-xs text-destructive">{shipping.error}</p>}
+                  {shipping.error && <p className="font-body text-xs text-destructive">{shipping.error === "CEP fora da área de entrega" ? "Frete a calcular via WhatsApp" : shipping.error}</p>}
                   {shipping.result && (
                     <p className="font-body text-xs text-primary">
                       {shipping.result.zone.name} — R$ {shipping.result.price.toFixed(2)} ({shipping.result.days} dias úteis)
