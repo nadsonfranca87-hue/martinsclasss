@@ -1,9 +1,10 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useAllProducts, useCategories, useStyles, useBrands } from "@/hooks/useProducts";
+import { useProductColors, useProductSizes } from "@/hooks/useProductVariations";
 import { supabase } from "@/integrations/supabase/client";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Upload, Trash2, Plus, Eye, EyeOff, Search, X } from "lucide-react";
+import { Upload, Trash2, Plus, Eye, EyeOff, Search, X, Palette } from "lucide-react";
 import AdminField from "./AdminField";
 
 export default function ProductsTab() {
