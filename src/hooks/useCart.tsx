@@ -44,9 +44,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addItem = (item: Omit<CartItem, "quantity">) => {
     setItems((prev) => {
-      const existing = prev.find((i) => i.id === item.id);
+      // Unique by id + color + size combo
+      const cartKey = `${item.id}-${item.color || ''}-${item.size || ''}`;
+      const existing = prev.find((i) => `${i.id}-${i.color || ''}-${i.size || ''}` === cartKey);
       if (existing) {
-        return prev.map((i) => (i.id === item.id ? { ...i, quantity: i.quantity + 1 } : i));
+        return prev.map((i) => (`${i.id}-${i.color || ''}-${i.size || ''}` === cartKey ? { ...i, quantity: i.quantity + 1 } : i));
       }
       return [...prev, { ...item, quantity: 1 }];
     });
