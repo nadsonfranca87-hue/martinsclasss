@@ -33,6 +33,8 @@ const CartDrawer = () => {
       title: i.title,
       price: i.price,
       quantity: i.quantity,
+      color: i.color || null,
+      size: i.size || null,
     }));
 
     await supabase.from("orders").insert({
