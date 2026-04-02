@@ -47,22 +47,33 @@ const CartDrawer = () => {
 
     // Build WhatsApp message
     const itemsText = items
-      .map((i) => `• ${i.title} (KEY: ${i.productKey}) x${i.quantity} - R$ ${(i.price * i.quantity).toFixed(2)}`)
+      .map((i) => {
+        let line = `• ${i.title} x${i.quantity} — R$ ${(i.price * i.quantity).toFixed(2)}`;
+        const vars = [i.color, i.size].filter(Boolean);
+        if (vars.length) line += `\n   ↳ ${vars.join(" | ")}`;
+        return line;
+      })
       .join("\n");
 
     const shippingText = shipping.result
       ? `*Frete (${shipping.result.zone.name}):* R$ ${shippingCost.toFixed(2)} (${shipping.result.days} dias úteis)`
-      : "*Frete:* A combinar";
+      : "*Frete:* A calcular via WhatsApp";
 
     const msg = encodeURIComponent(
-      `🛒 *Novo Pedido - Martins Class*\n\n` +
-      `*Cliente:* ${form.name}\n` +
-      `*Endereço:* ${form.address}\n` +
-      `*CEP:* ${shipping.cep}\n` +
-      `*WhatsApp:* ${form.whatsapp}\n\n` +
-      `*Produtos:*\n${itemsText}\n\n` +
-      `${shippingText}\n` +
-      `*Total: R$ ${grandTotal.toFixed(2)}*`
+      `━━━━━━━━━━━━━━━━━━━━\n` +
+      `🛍️ *MARTINS CLASS — NOVO PEDIDO*\n` +
+      `━━━━━━━━━━━━━━━━━━━━\n\n` +
+      `👤 *Cliente:* ${form.name}\n` +
+      `📍 *Endereço:* ${form.address}\n` +
+      `📮 *CEP:* ${shipping.cep || "Não informado"}\n` +
+      `📱 *WhatsApp:* ${form.whatsapp}\n\n` +
+      `━━━━━━━━━━━━━━━━━━━━\n` +
+      `📦 *PRODUTOS:*\n\n${itemsText}\n\n` +
+      `━━━━━━━━━━━━━━━━━━━━\n` +
+      `💰 *Subtotal:* R$ ${total.toFixed(2)}\n` +
+      `🚚 ${shippingText}\n` +
+      `✅ *TOTAL: R$ ${grandTotal.toFixed(2)}*\n` +
+      `━━━━━━━━━━━━━━━━━━━━`
     );
 
     const whatsappNumber = settings?.whatsapp_number || "5585997692382";
