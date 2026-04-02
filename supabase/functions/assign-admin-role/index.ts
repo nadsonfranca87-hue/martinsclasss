@@ -17,11 +17,39 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Verify the caller is authenticated
+    const authHeader = req.headers.get("Authorization");
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Verify the JWT token and get the calling user
+    const token = authHeader.replace("Bearer ", "");
+    const { data: { user: caller }, error: authError } = await supabaseAdmin.auth.getUser(token);
+
+    if (authError || !caller) {
+      return new Response(JSON.stringify({ error: "Invalid authentication" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { userId } = await req.json();
 
     if (!userId) {
       return new Response(JSON.stringify({ error: "userId is required" }), {
         status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // The caller must be the same user requesting admin role
+    if (caller.id !== userId) {
+      return new Response(JSON.stringify({ error: "Cannot assign admin role to another user" }), {
+        status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
@@ -45,7 +73,7 @@ Deno.serve(async (req) => {
       .insert({ user_id: userId, role: "admin" });
 
     if (error) {
-      return new Response(JSON.stringify({ error: error.message }), {
+      return new Response(JSON.stringify({ error: "Failed to assign role" }), {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
@@ -55,7 +83,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: String(err) }), {
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

@@ -37,8 +37,12 @@ export default function SettingsTab() {
       await queryClient.invalidateQueries({ queryKey: ["site-settings"] });
       toast.success("Configurações salvas!");
     } catch (err: any) {
-      console.error("Erro ao salvar:", err);
-      toast.error("Erro ao salvar: " + (err.message || "verifique se você está logado como admin"));
+      console.error("Settings save error:", err);
+      if (err?.code === "42501") {
+        toast.error("Permissão negada. Verifique seu acesso admin.");
+      } else {
+        toast.error("Erro ao salvar configurações. Tente novamente.");
+      }
     }
   };
 
