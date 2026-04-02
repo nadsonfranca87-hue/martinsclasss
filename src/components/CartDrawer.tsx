@@ -46,9 +46,9 @@ const CartDrawer = () => {
     }));
 
     await supabase.from("orders").insert({
-      customer_name: form.name,
-      customer_address: form.address,
-      customer_whatsapp: form.whatsapp,
+      customer_name: name,
+      customer_address: address,
+      customer_whatsapp: whatsapp,
       items: orderItems,
       total: grandTotal,
     });
