@@ -33,6 +33,8 @@ const CartDrawer = () => {
       title: i.title,
       price: i.price,
       quantity: i.quantity,
+      color: i.color || null,
+      size: i.size || null,
     }));
 
     await supabase.from("orders").insert({
@@ -45,22 +47,33 @@ const CartDrawer = () => {
 
     // Build WhatsApp message
     const itemsText = items
-      .map((i) => `• ${i.title} (KEY: ${i.productKey}) x${i.quantity} - R$ ${(i.price * i.quantity).toFixed(2)}`)
+      .map((i) => {
+        let line = `• ${i.title} x${i.quantity} — R$ ${(i.price * i.quantity).toFixed(2)}`;
+        const vars = [i.color, i.size].filter(Boolean);
+        if (vars.length) line += `\n   ↳ ${vars.join(" | ")}`;
+        return line;
+      })
       .join("\n");
 
     const shippingText = shipping.result
       ? `*Frete (${shipping.result.zone.name}):* R$ ${shippingCost.toFixed(2)} (${shipping.result.days} dias úteis)`
-      : "*Frete:* A combinar";
+      : "*Frete:* A calcular via WhatsApp";
 
     const msg = encodeURIComponent(
-      `🛒 *Novo Pedido - Martins Class*\n\n` +
-      `*Cliente:* ${form.name}\n` +
-      `*Endereço:* ${form.address}\n` +
-      `*CEP:* ${shipping.cep}\n` +
-      `*WhatsApp:* ${form.whatsapp}\n\n` +
-      `*Produtos:*\n${itemsText}\n\n` +
-      `${shippingText}\n` +
-      `*Total: R$ ${grandTotal.toFixed(2)}*`
+      `━━━━━━━━━━━━━━━━━━━━\n` +
+      `🛍️ *MARTINS CLASS — NOVO PEDIDO*\n` +
+      `━━━━━━━━━━━━━━━━━━━━\n\n` +
+      `👤 *Cliente:* ${form.name}\n` +
+      `📍 *Endereço:* ${form.address}\n` +
+      `📮 *CEP:* ${shipping.cep || "Não informado"}\n` +
+      `📱 *WhatsApp:* ${form.whatsapp}\n\n` +
+      `━━━━━━━━━━━━━━━━━━━━\n` +
+      `📦 *PRODUTOS:*\n\n${itemsText}\n\n` +
+      `━━━━━━━━━━━━━━━━━━━━\n` +
+      `💰 *Subtotal:* R$ ${total.toFixed(2)}\n` +
+      `🚚 ${shippingText}\n` +
+      `✅ *TOTAL: R$ ${grandTotal.toFixed(2)}*\n` +
+      `━━━━━━━━━━━━━━━━━━━━`
     );
 
     const whatsappNumber = settings?.whatsapp_number || "5585997692382";
@@ -95,13 +108,18 @@ const CartDrawer = () => {
             <p className="font-body text-sm text-muted-foreground text-center py-12">Seu carrinho está vazio</p>
           ) : (
             items.map((item) => (
-              <div key={item.id} className="flex gap-4 border-b border-border pb-4">
+              <div key={`${item.id}-${item.color || ''}-${item.size || ''}`} className="flex gap-4 border-b border-border pb-4">
                 {item.image && (
                   <img src={item.image} alt={item.title} className="w-16 h-20 object-cover bg-secondary" />
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="font-body text-sm text-foreground truncate">{item.title}</p>
                   <p className="font-body text-[10px] letter-wide uppercase text-muted-foreground">KEY: {item.productKey}</p>
+                  {(item.color || item.size) && (
+                    <p className="font-body text-[10px] text-muted-foreground mt-0.5">
+                      {[item.color && `Cor: ${item.color}`, item.size && `Tam: ${item.size}`].filter(Boolean).join(" · ")}
+                    </p>
+                  )}
                   <p className="font-body text-sm text-primary mt-1">R$ {item.price.toFixed(2)}</p>
                   <div className="flex items-center gap-2 mt-2">
                     <button onClick={() => updateQuantity(item.id, item.quantity - 1)} className="p-1 border border-border hover:border-primary transition-colors">
@@ -147,7 +165,7 @@ const CartDrawer = () => {
                       Calcular
                     </button>
                   </div>
-                  {shipping.error && <p className="font-body text-xs text-destructive">{shipping.error}</p>}
+                  {shipping.error && <p className="font-body text-xs text-destructive">{shipping.error === "CEP fora da área de entrega" ? "Frete a calcular via WhatsApp" : shipping.error}</p>}
                   {shipping.result && (
                     <p className="font-body text-xs text-primary">
                       {shipping.result.zone.name} — R$ {shipping.result.price.toFixed(2)} ({shipping.result.days} dias úteis)

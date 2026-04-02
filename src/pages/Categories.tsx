@@ -22,15 +22,8 @@ const Categories = () => {
 
   const handleAddToCart = (e: React.MouseEvent, product: any) => {
     e.stopPropagation();
-    const discount = product.discount_percent || 0;
-    const finalPrice = discount > 0 ? product.price * (1 - discount / 100) : product.price;
-    addItem({
-      id: product.id,
-      productKey: product.key,
-      title: product.title,
-      price: finalPrice,
-      image: product.images?.[0]?.image_url || "",
-    });
+    // Navigate to product detail for variation selection
+    navigate(`/produto/${product.id}`);
   };
 
   return (
