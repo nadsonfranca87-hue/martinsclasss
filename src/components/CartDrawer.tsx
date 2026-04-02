@@ -21,8 +21,16 @@ const CartDrawer = () => {
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim() || !form.address.trim() || !form.whatsapp.trim()) {
+    const name = form.name.trim().slice(0, 100);
+    const address = form.address.trim().slice(0, 500);
+    const whatsapp = form.whatsapp.trim().replace(/\D/g, "").slice(0, 15);
+
+    if (!name || !address || !whatsapp) {
       toast.error("Preencha todos os campos");
+      return;
+    }
+    if (!/^\d{10,15}$/.test(whatsapp)) {
+      toast.error("WhatsApp inválido. Use apenas números (10-15 dígitos).");
       return;
     }
     setSending(true);
@@ -38,9 +46,9 @@ const CartDrawer = () => {
     }));
 
     await supabase.from("orders").insert({
-      customer_name: form.name,
-      customer_address: form.address,
-      customer_whatsapp: form.whatsapp,
+      customer_name: name,
+      customer_address: address,
+      customer_whatsapp: whatsapp,
       items: orderItems,
       total: grandTotal,
     });
