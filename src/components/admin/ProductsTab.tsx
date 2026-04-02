@@ -202,6 +202,9 @@ export default function ProductsTab() {
             </button>
           </div>
 
+          {/* Variations */}
+          {editing.id && <VariationsEditor productId={editing.id} />}
+
           <div className="flex gap-3 pt-2">
             <button onClick={() => handleSave(editing)} className="font-body text-xs letter-wide uppercase bg-primary text-primary-foreground px-6 py-2.5 hover:bg-primary/90 transition-colors rounded-sm">Salvar</button>
             <button onClick={() => { setEditing(null); setCreating(false); }} className="font-body text-xs letter-wide uppercase border border-border text-muted-foreground px-6 py-2.5 hover:text-foreground transition-colors rounded-sm">Cancelar</button>
